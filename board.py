@@ -155,6 +155,53 @@ class GameBoard:
 
         return adjacent
 
+    def is_valid_capture(self, from_x: int, from_y: int, to_x: int, to_y: int, attacker: "Player") -> bool:
+        """Check if a capture move is valid (jump over enemy to land on empty space)."""
+        # Calculate direction and distance
+        dx = to_x - from_x
+        dy = to_y - from_y
+
+        # Must be exactly 2 steps in one of 8 directions
+        if not ((abs(dx) == 2 and dy == 0) or  # Horizontal
+                (dx == 0 and abs(dy) == 2) or  # Vertical
+                (abs(dx) == 2 and abs(dy) == 2)):  # Diagonal
+            return False
+
+        # Calculate middle position (jumped-over piece)
+        middle_x = from_x + dx // 2
+        middle_y = from_y + dy // 2
+
+        # Check bounds
+        if not (self.is_valid_position(middle_x, middle_y) and self.is_valid_position(to_x, to_y)):
+            return False
+
+        # Check if positions are disabled
+        if self.is_disabled_node(middle_x, middle_y) or self.is_disabled_node(to_x, to_y):
+            return False
+
+        # Check if paths are disabled
+        if (self.is_disabled_path(from_x, from_y, middle_x, middle_y) or
+            self.is_disabled_path(middle_x, middle_y, to_x, to_y)):
+            return False
+
+        # Get nodes
+        middle_node = self.get_node(middle_x, middle_y)
+        target_node = self.get_node(to_x, to_y)
+
+        if not middle_node or not target_node:
+            return False
+
+        # Middle position must have an enemy piece
+        if not middle_node.is_occupied():
+            return False
+
+        # Target position must be empty
+        if target_node.is_occupied():
+            return False
+
+        # Middle piece must be enemy (different player)
+        return middle_node.occupied_by != attacker
+
     def is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int) -> bool:
         """Check if a move is valid (adjacent and target not occupied)."""
         # Check if target position is valid
@@ -178,6 +225,37 @@ class GameBoard:
         target_node = self.get_node(to_x, to_y)
         return target_node is not None and not target_node.is_occupied()
 
+    def capture_move(self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int) -> tuple[bool, "Player"]:
+        """Execute a capture move. Returns (success, captured_player)."""
+        if not self.is_valid_capture(from_x, from_y, to_x, to_y, player):
+            return False, None
+
+        # Calculate middle position
+        dx = to_x - from_x
+        dy = to_y - from_y
+        middle_x = from_x + dx // 2
+        middle_y = from_y + dy // 2
+
+        # Get nodes
+        old_node = self.get_node(from_x, from_y)
+        middle_node = self.get_node(middle_x, middle_y)
+        new_node = self.get_node(to_x, to_y)
+
+        if not old_node or not middle_node or not new_node:
+            return False, None
+
+        # Capture the middle piece
+        captured_player = middle_node.occupied_by
+
+        # Clear old position and middle position
+        old_node.occupied_by = None
+        middle_node.occupied_by = None
+
+        # Set new position
+        new_node.occupied_by = player
+
+        return True, captured_player
+
     def move_player(
         self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int
     ) -> bool:
@@ -194,8 +272,6 @@ class GameBoard:
         new_node = self.get_node(to_x, to_y)
         if new_node:
             new_node.occupied_by = player
-            player.x = to_x
-            player.y = to_y
             return True
 
         return False

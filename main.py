@@ -8,9 +8,28 @@ import sys
 from board import GameBoard
 from player import GameState, PlayerSide
 import os
+import logging
+import json
+from datetime import datetime
+from typing import Optional, Dict, Any
 
 
 DEBUG_MODE = os.getenv("KOMIKAN_DEBUG", "0") == "1"
+
+# Debug logging setup
+if DEBUG_MODE:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('komikan_game.log'),
+            logging.StreamHandler()
+        ]
+    )
+    logger = logging.getLogger(__name__)
+else:
+    logger = logging.getLogger(__name__)
+    logger.disabled = True
 
 # Constants
 WINDOW_WIDTH = 500
@@ -30,6 +49,74 @@ if DEBUG_MODE:
 else:
     DISABLED_NODE_COLOR = BACKGROUND_COLOR
     DISABLED_PATH_COLOR = BACKGROUND_COLOR
+
+
+class GameLogger:
+    """Handles debug logging for game events."""
+
+    def __init__(self):
+        self.game_start_time = datetime.now()
+        self.move_count = 0
+        if DEBUG_MODE:
+            self.log_game_start()
+
+    def log_game_start(self):
+        """Log the start of a new game."""
+        logger.info("=== KOMIKAN GAME STARTED ===")
+        logger.info(f"Game start time: {self.game_start_time.isoformat()}")
+        logger.info("North player: 1 token at (2, 0)")
+        logger.info("South player: 12 tokens across bottom two rows")
+
+    def log_move_attempt(self, player_side: PlayerSide, from_pos: tuple, to_pos: tuple,
+                        token_number: Optional[int] = None, is_capture: bool = False) -> dict:
+        """Log a movement attempt and return the log entry."""
+        self.move_count += 1
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "game_time_seconds": (datetime.now() - self.game_start_time).total_seconds(),
+            "move_number": self.move_count,
+            "player": player_side.value,
+            "from_position": from_pos,
+            "to_position": to_pos,
+            "token_number": token_number,
+            "is_capture_attempt": is_capture,
+            "action_type": "capture" if is_capture else "move"
+        }
+
+        if DEBUG_MODE:
+            token_info = f" (token #{token_number})" if token_number is not None else ""
+            action = "CAPTURE ATTEMPT" if is_capture else "MOVE ATTEMPT"
+            logger.debug(f"{action}: {player_side.value.upper()}{token_info} {from_pos} -> {to_pos}")
+
+        return log_entry
+
+    def log_move_result(self, log_entry: dict, success: bool, captured_token: Optional[int] = None,
+                       failure_reason: Optional[str] = None):
+        """Log the result of a movement attempt."""
+        log_entry["success"] = success
+        log_entry["captured_token_number"] = captured_token
+        log_entry["failure_reason"] = failure_reason
+        log_entry["result_timestamp"] = datetime.now().isoformat()
+
+        if DEBUG_MODE:
+            if success:
+                if log_entry["is_capture_attempt"] and captured_token is not None:
+                    logger.info(f"✓ CAPTURE SUCCESS: Captured south token #{captured_token}")
+                else:
+                    logger.info(f"✓ MOVE SUCCESS: {log_entry['player'].upper()} moved to {log_entry['to_position']}")
+            else:
+                logger.warning(f"✗ MOVE FAILED: {failure_reason}")
+
+            # Log complete entry as JSON for replay
+            logger.debug(f"GAME_EVENT: {json.dumps(log_entry)}")
+
+    def log_game_state(self, game_state: GameState):
+        """Log current game state for debugging."""
+        if DEBUG_MODE:
+            north_pos = game_state.player_north.positions[0] if game_state.player_north.positions else "eliminated"
+            south_count = len(game_state.player_south.positions)
+            logger.debug(f"GAME_STATE: North at {north_pos}, South has {south_count} tokens")
+            logger.debug(f"POSITIONS: South tokens at {game_state.player_south.positions}")
 
 
 class GameRenderer:
@@ -214,7 +301,11 @@ class GameRenderer:
                 elif is_active_player:
                     # Highlight active player with pulsing gold ring
                     pygame.draw.circle(
-                        self.screen, ACTIVE_PLAYER_COLOR, screen_pos, TOKEN_RADIUS + 4, 3
+                        self.screen,
+                        ACTIVE_PLAYER_COLOR,
+                        screen_pos,
+                        TOKEN_RADIUS + 4,
+                        3,
                     )
 
                 if not is_disabled:
@@ -236,7 +327,9 @@ class GameRenderer:
                         if token_number > 0:
                             number_font = pygame.font.Font(None, 20)
                             number_text = str(token_number)
-                            text_surface = number_font.render(number_text, True, (255, 255, 255))
+                            text_surface = number_font.render(
+                                number_text, True, (255, 255, 255)
+                            )
                             text_rect = text_surface.get_rect(center=screen_pos)
                             self.screen.blit(text_surface, text_rect)
 
@@ -300,6 +393,7 @@ class Game:
         self.board = GameBoard()
         self.game_state = GameState()
         self.renderer = GameRenderer(self.screen)
+        self.game_logger = GameLogger()
 
         # Game state
         self.selected_position = None
@@ -326,6 +420,82 @@ class Game:
             self.board.place_player(self.game_state.player_south, x, y)
             self.game_state.player_south.positions.append((x, y))
 
+    def make_move_with_logging(self, player, from_x, from_y, to_x, to_y):
+        """Make a move with comprehensive logging."""
+        from_pos = (from_x, from_y)
+        to_pos = (to_x, to_y)
+
+        # Get token number
+        token_number = player.get_token_number(from_x, from_y)
+
+        # Check if it's a capture attempt
+        is_capture = self.board.is_valid_capture(from_x, from_y, to_x, to_y, player)
+
+        # Log the move attempt
+        log_entry = self.game_logger.log_move_attempt(
+            player.side, from_pos, to_pos, token_number, is_capture
+        )
+
+        # Attempt the move
+        success = self.board.move_player(player, from_x, from_y, to_x, to_y)
+
+        if success:
+            # Check if this was a successful capture
+            captured_token_number = None
+            if is_capture:
+                # For capture moves, we need to identify which token was captured
+                # This would need to be implemented in the board's move_player method
+                # For now, we'll log it as a capture attempt that succeeded
+                pass
+
+            self.game_logger.log_move_result(log_entry, True, captured_token_number)
+            self.game_logger.log_game_state(self.game_state)
+        else:
+            failure_reason = "Move validation failed"
+            if not self.board.is_valid_move(from_x, from_y, to_x, to_y):
+                failure_reason = "Invalid move - position blocked, out of bounds, or path disabled"
+
+            self.game_logger.log_move_result(log_entry, False, None, failure_reason)
+
+        return success
+
+    def make_capture_with_logging(self, player, from_x, from_y, to_x, to_y):
+        """Make a capture move with comprehensive logging."""
+        from_pos = (from_x, from_y)
+        to_pos = (to_x, to_y)
+
+        # Get token number
+        token_number = player.get_token_number(from_x, from_y)
+
+        # Log the capture attempt
+        log_entry = self.game_logger.log_move_attempt(
+            player.side, from_pos, to_pos, token_number, is_capture=True
+        )
+
+        # Attempt the capture
+        success, captured_player = self.board.capture_move(
+            player, from_x, from_y, to_x, to_y
+        )
+
+        if success and captured_player:
+            # Calculate captured position
+            dx = to_x - from_x
+            dy = to_y - from_y
+            captured_pos = (from_x + dx // 2, from_y + dy // 2)
+
+            # Get captured token number
+            captured_token_number = None
+            if captured_player and captured_pos in captured_player.positions:
+                captured_token_number = captured_player.get_token_number(captured_pos[0], captured_pos[1])
+
+            self.game_logger.log_move_result(log_entry, True, captured_token_number)
+            self.game_logger.log_game_state(self.game_state)
+        else:
+            failure_reason = "Capture move failed - no valid target or path blocked"
+            self.game_logger.log_move_result(log_entry, False, None, failure_reason)
+
+        return success, captured_player
+
     def handle_click(self, pos: tuple[int, int], button: int):
         """Handle mouse click events."""
         board_x, board_y = self.renderer.get_board_pos_from_screen(pos[0], pos[1])
@@ -337,7 +507,7 @@ class Game:
             if self.selected_position:
                 # Try to move to clicked position
                 if (board_x, board_y) in self.valid_moves:
-                    success = self.board.move_player(
+                    success = self.make_move_with_logging(
                         self.game_state.current_player,
                         self.selected_position[0],
                         self.selected_position[1],
@@ -366,6 +536,37 @@ class Game:
             self.selected_position = None
             self.valid_moves = []
 
+    def get_all_valid_moves(self, x: int, y: int) -> list:
+        """Get all valid moves including regular moves and captures."""
+        valid_moves = []
+        player = self.game_state.current_player
+
+        # Regular adjacent moves
+        for mx, my in self.board.get_adjacent_positions(x, y):
+            if self.board.is_valid_move(x, y, mx, my):
+                valid_moves.append((mx, my))
+
+        # Capture moves (only for north player)
+        if player.side.value == "pangui":  # North player
+            # Check all 8 directions for potential captures (2-step jumps)
+            directions = [
+                (0, -2),
+                (2, -2),
+                (2, 0),
+                (2, 2),  # N, NE, E, SE
+                (0, 2),
+                (-2, 2),
+                (-2, 0),
+                (-2, -2),  # S, SW, W, NW
+            ]
+
+            for dx, dy in directions:
+                capture_x, capture_y = x + dx, y + dy
+                if self.board.is_valid_capture(x, y, capture_x, capture_y, player):
+                    valid_moves.append((capture_x, capture_y))
+
+        return valid_moves
+
     def try_select_piece(self, x: int, y: int):
         """Try to select a piece at the given position."""
         node = self.board.get_node(x, y)
@@ -375,11 +576,7 @@ class Game:
             and node.occupied_by == self.game_state.current_player
         ):
             self.selected_position = (x, y)
-            self.valid_moves = [
-                (mx, my)
-                for mx, my in self.board.get_adjacent_positions(x, y)
-                if self.board.is_valid_move(x, y, mx, my)
-            ]
+            self.valid_moves = self.get_all_valid_moves(x, y)
         else:
             self.selected_position = None
             self.valid_moves = []
@@ -393,11 +590,7 @@ class Game:
                 # Select the first available piece
                 first_pos = player.positions[0]
                 self.selected_position = first_pos
-                self.valid_moves = [
-                    (mx, my)
-                    for mx, my in self.board.get_adjacent_positions(first_pos[0], first_pos[1])
-                    if self.board.is_valid_move(first_pos[0], first_pos[1], mx, my)
-                ]
+                self.valid_moves = self.get_all_valid_moves(first_pos[0], first_pos[1])
             return
 
         # Define movement directions
@@ -423,25 +616,45 @@ class Game:
 
             # Check if move is valid and in valid_moves list
             if (target_x, target_y) in self.valid_moves:
-                success = self.board.move_player(
-                    self.game_state.current_player,
-                    current_x,
-                    current_y,
-                    target_x,
-                    target_y,
-                )
-                if success:
-                    # Update player's positions list
-                    player = self.game_state.current_player
-                    if (current_x, current_y) in player.positions:
-                        player.positions.remove((current_x, current_y))
-                    player.positions.append((target_x, target_y))
+                player = self.game_state.current_player
 
-                    self.selected_position = None
-                    self.valid_moves = []
-                    self.game_state.switch_turn()
+                # Try capture move first (for north player)
+                if player.side.value == "pangui" and self.board.is_valid_capture(
+                    current_x, current_y, target_x, target_y, player
+                ):
+                    success, captured_player = self.make_capture_with_logging(
+                        player, current_x, current_y, target_x, target_y
+                    )
+                    if success and captured_player:
+                        # Remove captured piece from captured player's positions
+                        dx = target_x - current_x
+                        dy = target_y - current_y
+                        captured_pos = (current_x + dx // 2, current_y + dy // 2)
+                        if captured_pos in captured_player.positions:
+                            captured_player.positions.remove(captured_pos)
 
-        # Escape to deselect or exit
+                        # Update attacker's position
+                        if (current_x, current_y) in player.positions:
+                            player.positions.remove((current_x, current_y))
+                        player.positions.append((target_x, target_y))
+
+                        self.selected_position = None
+                        self.valid_moves = []
+                        self.game_state.switch_turn()
+                else:
+                    # Regular move
+                    success = self.make_move_with_logging(
+                        player, current_x, current_y, target_x, target_y
+                    )
+                    if success:
+                        # Update player's positions list
+                        if (current_x, current_y) in player.positions:
+                            player.positions.remove((current_x, current_y))
+                        player.positions.append((target_x, target_y))
+
+                        self.selected_position = None
+                        self.valid_moves = []
+                        self.game_state.switch_turn()  # Escape to deselect or exit
         elif key == pygame.K_ESCAPE:
             current_time = pygame.time.get_ticks()
 
@@ -468,8 +681,10 @@ class Game:
             current_time = pygame.time.get_ticks()
 
             # Reset ESC timer if timeout exceeded
-            if (self.esc_pressed_time is not None and
-                current_time - self.esc_pressed_time > self.esc_timeout):
+            if (
+                self.esc_pressed_time is not None
+                and current_time - self.esc_pressed_time > self.esc_timeout
+            ):
                 self.esc_pressed_time = None
 
             for event in pygame.event.get():
