@@ -6,7 +6,6 @@ Provides convenient ways to run different test suites.
 
 import sys
 import subprocess
-from pathlib import Path
 
 
 def run_command(cmd):
@@ -27,9 +26,6 @@ def main():
         test_type = sys.argv[1].lower()
     else:
         test_type = "all"
-
-    # Change to project directory
-    project_root = Path(__file__).parent
 
     # Test commands
     commands = {

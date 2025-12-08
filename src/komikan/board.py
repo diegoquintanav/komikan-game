@@ -3,8 +3,11 @@ Game board for the Komikan board game.
 Manages the 5x8 node grid and validates player movements.
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, TYPE_CHECKING
 import logging
+
+if TYPE_CHECKING:
+    from komikan.player import Player
 
 logger = logging.getLogger(__name__)
 

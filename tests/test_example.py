@@ -129,7 +129,7 @@ class TestExample:
 def test_example_performance_marked():
     """Example test marked as performance test."""
     # This test can be skipped with: pytest -m "not performance"
-    board = GameBoard()
+    board = GameBoard()  # noqa: F841
     # Performance test code here
     pass
 

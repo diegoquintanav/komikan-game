@@ -3,11 +3,10 @@ Test fixtures and configuration for Komikan game tests.
 """
 
 import pytest
-import sys
-import os
 
 from komikan.board import GameBoard
 from komikan.player import Player, PlayerSide, GameState
+
 
 @pytest.fixture
 def empty_board():

@@ -222,6 +222,7 @@ class TestEdgeCases:
                 is_valid = board.is_valid_capture(
                     3, 3, target_x, target_y, north_player
                 )
+                assert is_valid, f"Capture should be valid in direction ({dx}, {dy})"
 
                 # Clean up for next test
                 board.get_node(middle_x, middle_y).occupied_by = None
