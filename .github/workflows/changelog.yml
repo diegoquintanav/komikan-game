@@ -39,7 +39,7 @@ jobs:
             # If no tags exist, check commits in this PR or recent commits
             if [ -n \"${{ github.event.pull_request.base.ref }}\" ]; then
               BASE_BRANCH=\"${{ github.event.pull_request.base.ref }}\"
-              git fetch origin ${BASE_BRANCH}:${BASE_BRANCH}
+              git fetch origin ${BASE_BRANCH}
               COMMITS=$(git rev-list origin/${BASE_BRANCH}..HEAD --oneline)
             else
               # Fallback to recent commits
