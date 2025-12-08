@@ -94,6 +94,8 @@ class GameBoard:
         ((4, 4), (3, 5)),
         ((3, 5), (2, 6)),
         ((2, 6), (1, 7)),
+        # Diagonal line starting at (4,6)
+        ((4, 6), (3, 7)),
     }
 
     DISABLED_PATHS = {
