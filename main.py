@@ -16,7 +16,8 @@ DEBUG_MODE = os.getenv("KOMIKAN_DEBUG", "0") == "1"
 WINDOW_WIDTH = 500
 WINDOW_HEIGHT = 600
 BOARD_MARGIN = 100
-NODE_RADIUS = 20
+NODE_RADIUS = 5
+TOKEN_RADIUS = 15
 GRID_COLOR = (100, 100, 100)
 BACKGROUND_COLOR = (240, 240, 240)
 SELECTED_COLOR = (255, 255, 0)
@@ -204,16 +205,16 @@ class GameRenderer:
                     )
                 elif selected_pos == (x, y):
                     pygame.draw.circle(
-                        self.screen, SELECTED_COLOR, screen_pos, NODE_RADIUS + 5
+                        self.screen, SELECTED_COLOR, screen_pos, TOKEN_RADIUS + 5
                     )
                 elif valid_moves and (x, y) in valid_moves:
                     pygame.draw.circle(
-                        self.screen, VALID_MOVE_COLOR, screen_pos, NODE_RADIUS + 3
+                        self.screen, VALID_MOVE_COLOR, screen_pos, TOKEN_RADIUS + 3
                     )
                 elif is_active_player:
                     # Highlight active player with pulsing gold ring
                     pygame.draw.circle(
-                        self.screen, ACTIVE_PLAYER_COLOR, screen_pos, NODE_RADIUS + 4, 3
+                        self.screen, ACTIVE_PLAYER_COLOR, screen_pos, TOKEN_RADIUS + 4, 3
                     )
 
                 if not is_disabled:
@@ -227,7 +228,7 @@ class GameRenderer:
                             self.screen,
                             node.occupied_by.color,
                             screen_pos,
-                            NODE_RADIUS - 3,
+                            TOKEN_RADIUS - 3,
                         )
 
     def draw_coordinate_labels(self):
@@ -268,7 +269,7 @@ class GameRenderer:
         instructions = [
             "Mouse: Click to select/move | Right-click to deselect",
             "Keyboard: WASD/Arrows to move | QE/ZC for diagonals",
-            "ESC to deselect | Auto-selects your piece on key press",
+            "ESC to deselect | Double ESC to exit | Auto-selects your piece on key press",
         ]
         for i, instruction in enumerate(instructions):
             text_surface = pygame.font.Font(None, 22).render(
@@ -294,6 +295,10 @@ class Game:
         # Game state
         self.selected_position = None
         self.valid_moves = []
+
+        # ESC key exit tracking
+        self.esc_pressed_time = None
+        self.esc_timeout = 2000  # 2 seconds in milliseconds
 
         # Initialize player positions
         self.setup_initial_positions()
@@ -405,16 +410,37 @@ class Game:
                     self.valid_moves = []
                     self.game_state.switch_turn()
 
-        # Escape to deselect
+        # Escape to deselect or exit
         elif key == pygame.K_ESCAPE:
-            self.selected_position = None
-            self.valid_moves = []
+            current_time = pygame.time.get_ticks()
+
+            if self.esc_pressed_time is None:
+                # First ESC press
+                self.esc_pressed_time = current_time
+                self.selected_position = None
+                self.valid_moves = []
+            elif current_time - self.esc_pressed_time <= self.esc_timeout:
+                # Second ESC press within timeout - exit game
+                pygame.quit()
+                sys.exit()
+            else:
+                # ESC pressed after timeout - reset timer
+                self.esc_pressed_time = current_time
+                self.selected_position = None
+                self.valid_moves = []
 
     def run(self):
         """Main game loop."""
         running = True
 
         while running:
+            current_time = pygame.time.get_ticks()
+
+            # Reset ESC timer if timeout exceeded
+            if (self.esc_pressed_time is not None and
+                current_time - self.esc_pressed_time > self.esc_timeout):
+                self.esc_pressed_time = None
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False

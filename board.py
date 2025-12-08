@@ -28,7 +28,8 @@ class GameBoard:
     WIDTH = 5
     HEIGHT = 8
     DISABLED_NODES = {(0, 2), (4, 2)}  # Nodes that cannot be moved to
-    DISABLED_PATHS = {
+
+    _DISABLED_TRIANGLE_PATHS = {
         # Paths that cannot be traversed (bidirectional)
         # force top north inverted triangle
         ((1, 2), (1, 3)),
@@ -37,20 +38,68 @@ class GameBoard:
         ((3, 2), (3, 3)),
         ((2, 2), (3, 3)),
         ((3, 2), (4, 3)),
-
         # All paths connecting to disabled node (0, 2)
-        ((0, 2), (0, 1)),    # North
-        ((0, 2), (1, 1)),    # Northeast
-        ((0, 2), (1, 2)),    # East
-        ((0, 2), (1, 3)),    # Southeast
-        ((0, 2), (0, 3)),    # South
-
+        ((0, 2), (0, 1)),  # North
+        ((0, 2), (1, 1)),  # Northeast
+        ((0, 2), (1, 2)),  # East
+        ((0, 2), (1, 3)),  # Southeast
+        ((0, 2), (0, 3)),  # South
         # All paths connecting to disabled node (4, 2)
-        ((4, 2), (4, 1)),    # North
-        ((4, 2), (3, 1)),    # Northwest
-        ((4, 2), (3, 2)),    # West
-        ((4, 2), (3, 3)),    # Southwest
-        ((4, 2), (4, 3)),    # South
+        ((4, 2), (4, 1)),  # North
+        ((4, 2), (3, 1)),  # Northwest
+        ((4, 2), (3, 2)),  # West
+        ((4, 2), (3, 3)),  # Southwest
+        ((4, 2), (4, 3)),  # South
+        # All diagonal paths if y <= 2 and every value of x in [0,4]
+        ((0, 0), (1, 1)),
+        ((1, 1), (2, 2)),
+        ((1, 0), (0, 1)),
+        ((1, 0), (2, 1)),
+        ((2, 0), (1, 1)),
+        ((2, 0), (3, 1)),
+        ((3, 0), (2, 1)),
+        ((3, 0), (4, 1)),
+        ((4, 0), (3, 1)),
+        ((1, 2), (2, 1)),
+        ((2, 2), (1, 1)),
+        ((2, 2), (3, 1)),
+        ((3, 2), (2, 1)),
+    }
+
+    _DISABLED_POS_DIAGONAL_PATHS = {
+        # Full diagonal paths where y>=3 and x is odd
+        # Diagonal line starting at (1,3): (1,3) -> (2,4) -> (3,5) -> (4,6)
+        ((1, 3), (2, 4)),
+        ((2, 4), (3, 5)),
+        ((3, 5), (4, 6)),
+        # Diagonal line starting at (3,3): (3,3) -> (4,4)
+        ((3, 3), (4, 4)),
+        # Diagonal line starting at 0,4
+        ((0, 4), (1, 5)),
+        ((1, 5), (2, 6)),
+        ((2, 6), (3, 7)),
+        # Diagonal line starting at 0,6
+        ((0, 6), (1, 7)),
+    }
+
+    _DISABLED_NEG_DIAGONAL_PATHS = {
+        # Full diagonal paths where y>=3 and x is even
+        # Diagonal line starting at (1,3): (1,3) -> (0,4)
+        ((1, 3), (0, 4)),
+        # Diagonal line starting at (3,3): (3,3) -> (2,4) -> (1,5) -> (0,6)
+        ((3, 3), (2, 4)),
+        ((2, 4), (1, 5)),
+        ((1, 5), (0, 6)),
+        # Diagonal line starting at (4,4)
+        ((4, 4), (3, 5)),
+        ((3, 5), (2, 6)),
+        ((2, 6), (1, 7)),
+    }
+
+    DISABLED_PATHS = {
+        *_DISABLED_TRIANGLE_PATHS,
+        *_DISABLED_POS_DIAGONAL_PATHS,
+        *_DISABLED_NEG_DIAGONAL_PATHS,
     }
 
     def __init__(self):
