@@ -128,12 +128,12 @@ jobs:
 
       - name: Create GitHub Release
         if: steps.check-release.outputs.release-needed == 'true' && steps.dry-run.outputs.new-version != ''
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ steps.bump.outputs.new-tag }}
-          release_name: Release ${{ steps.bump.outputs.new-tag }}
+          name: Release ${{ steps.bump.outputs.new-tag }}
           body_path: ${{ steps.extract-notes.outputs.has-notes == 'true' && 'release_notes.md' || '' }}
           body: ${{ steps.extract-notes.outputs.has-notes == 'false' && 'Automated release based on conventional commits.' || '' }}
           draft: false

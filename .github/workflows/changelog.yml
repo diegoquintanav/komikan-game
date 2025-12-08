@@ -37,8 +37,8 @@ jobs:
             COMMITS=$(git rev-list ${LAST_TAG}..HEAD --oneline)
           else
             # If no tags exist, check commits in this PR
-            git fetch origin main:main || git fetch origin master:master || true
-            BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' || echo "main")
+            BASE_BRANCH="${{ github.event.pull_request.base.ref || 'main' }}"
+            git fetch origin ${BASE_BRANCH}:${BASE_BRANCH}
             COMMITS=$(git rev-list origin/${BASE_BRANCH}..HEAD --oneline || git log --oneline -10)
           fi
 
@@ -109,7 +109,13 @@ jobs:
       - name: Update existing changelog
         if: steps.changelog-exists.outputs.exists == 'true'
         run: |
-          uv run cz changelog --incremental
+          # Try incremental update, fall back to full changelog if no tags exist
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            uv run cz changelog --incremental
+          else
+            echo "No existing tags found, generating full changelog"
+            uv run cz changelog
+          fi
 
       - name: Check for changes
         id: git-check
