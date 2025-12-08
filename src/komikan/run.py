@@ -460,18 +460,27 @@ class Game:
             player.side, from_pos, to_pos, token_number, is_capture
         )
 
-        # Attempt the move
-        success = self.board.move_player(player, from_x, from_y, to_x, to_y)
+        # Attempt the move - use different methods for capture vs regular move
+        if is_capture:
+            # Handle capture move
+            success, captured_player = self.board.capture_move(
+                player, from_x, from_y, to_x, to_y
+            )
+            captured_token_number = None
+            if success and captured_player:
+                # Calculate captured position to get token number
+                dx = to_x - from_x
+                dy = to_y - from_y
+                captured_pos = (from_x + dx // 2, from_y + dy // 2)
+                captured_token_number = captured_player.get_token_number(
+                    captured_pos[0], captured_pos[1]
+                )
+        else:
+            # Handle regular move
+            success = self.board.move_player(player, from_x, from_y, to_x, to_y)
+            captured_token_number = None
 
         if success:
-            # Check if this was a successful capture
-            captured_token_number = None
-            if is_capture:
-                # For capture moves, we need to identify which token was captured
-                # This would need to be implemented in the board's move_player method
-                # For now, we'll log it as a capture attempt that succeeded
-                pass
-
             self.game_logger.log_move_result(log_entry, True, captured_token_number)
             self.game_logger.log_game_state(self.game_state)
         else:
