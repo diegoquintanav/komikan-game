@@ -2,9 +2,8 @@
 Integration tests for game mechanics and scenarios.
 """
 
-import pytest
-from board import GameBoard
-from player import Player, PlayerSide, GameState
+from komikan.board import GameBoard
+from komikan.player import Player, PlayerSide
 
 
 class TestGameIntegration:
@@ -47,7 +46,13 @@ class TestGameIntegration:
         new_pos = (south_start[0], south_start[1] - 1)  # Move north one step
 
         if board.is_valid_move(south_start[0], south_start[1], new_pos[0], new_pos[1]):
-            success = board.move_player(game_state.player_south, south_start[0], south_start[1], new_pos[0], new_pos[1])
+            success = board.move_player(
+                game_state.player_south,
+                south_start[0],
+                south_start[1],
+                new_pos[0],
+                new_pos[1],
+            )
             assert success
 
     def test_capture_scenario(self):
@@ -93,11 +98,17 @@ class TestGameIntegration:
 
         # Try to move first token
         adjacent_positions = board.get_adjacent_positions(pos1[0], pos1[1])
-        valid_moves = [pos for pos in adjacent_positions if board.is_valid_move(pos1[0], pos1[1], pos[0], pos[1])]
+        valid_moves = [
+            pos
+            for pos in adjacent_positions
+            if board.is_valid_move(pos1[0], pos1[1], pos[0], pos[1])
+        ]
 
         if valid_moves:
             new_pos = valid_moves[0]
-            success = board.move_player(game_state.player_south, pos1[0], pos1[1], new_pos[0], new_pos[1])
+            success = board.move_player(
+                game_state.player_south, pos1[0], pos1[1], new_pos[0], new_pos[1]
+            )
             assert success
 
             # Update positions
@@ -105,7 +116,9 @@ class TestGameIntegration:
             game_state.player_south.positions.append(new_pos)
 
             # Second token should still be in place
-            assert board.get_node(pos2[0], pos2[1]).occupied_by == game_state.player_south
+            assert (
+                board.get_node(pos2[0], pos2[1]).occupied_by == game_state.player_south
+            )
 
     def test_game_state_consistency(self, board_with_players):
         """Test that game state remains consistent after moves."""
@@ -145,7 +158,9 @@ class TestEdgeCases:
 
         # Set up capture at edge
         board.place_player(north_player, 0, 1)
-        board.place_player(south_player, 0, 2)  # This is a disabled node, so invalid setup
+        board.place_player(
+            south_player, 0, 2
+        )  # This is a disabled node, so invalid setup
 
         # This should be invalid due to disabled node
         assert not board.is_valid_capture(0, 1, 0, 3, north_player)
@@ -161,7 +176,9 @@ class TestEdgeCases:
         board.place_player(south_player, 1, 1)
 
         # Capture would go out of bounds
-        assert not board.is_valid_capture(0, 0, 2, 2, north_player)  # Out of bounds diagonally
+        assert not board.is_valid_capture(
+            0, 0, 2, 2, north_player
+        )  # Out of bounds diagonally
 
     def test_all_directions_capture(self):
         """Test capture in all 8 directions."""
@@ -176,23 +193,24 @@ class TestEdgeCases:
         directions = [
             (0, -2),  # North
             (2, -2),  # Northeast
-            (2, 0),   # East
-            (2, 2),   # Southeast
-            (0, 2),   # South
+            (2, 0),  # East
+            (2, 2),  # Southeast
+            (0, 2),  # South
             (-2, 2),  # Southwest
             (-2, 0),  # West
-            (-2, -2)  # Northwest
+            (-2, -2),  # Northwest
         ]
 
         for dx, dy in directions:
             target_x, target_y = 3 + dx, 3 + dy
-            middle_x, middle_y = 3 + dx//2, 3 + dy//2
+            middle_x, middle_y = 3 + dx // 2, 3 + dy // 2
 
-            if (board.is_valid_position(target_x, target_y) and
-                board.is_valid_position(middle_x, middle_y) and
-                not board.is_disabled_node(target_x, target_y) and
-                not board.is_disabled_node(middle_x, middle_y)):
-
+            if (
+                board.is_valid_position(target_x, target_y)
+                and board.is_valid_position(middle_x, middle_y)
+                and not board.is_disabled_node(target_x, target_y)
+                and not board.is_disabled_node(middle_x, middle_y)
+            ):
                 # Clear any existing pieces
                 board.get_node(middle_x, middle_y).occupied_by = None
                 board.get_node(target_x, target_y).occupied_by = None
@@ -201,7 +219,9 @@ class TestEdgeCases:
                 board.place_player(south_player, middle_x, middle_y)
 
                 # Should be valid capture
-                is_valid = board.is_valid_capture(3, 3, target_x, target_y, north_player)
+                is_valid = board.is_valid_capture(
+                    3, 3, target_x, target_y, north_player
+                )
 
                 # Clean up for next test
                 board.get_node(middle_x, middle_y).occupied_by = None

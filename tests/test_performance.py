@@ -2,10 +2,9 @@
 Performance tests for the Komikan game.
 """
 
-import pytest
 import time
-from board import GameBoard
-from player import Player, PlayerSide, GameState
+from komikan.board import GameBoard
+from komikan.player import Player, PlayerSide, GameState
 
 
 class TestPerformance:

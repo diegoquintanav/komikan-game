@@ -2,9 +2,8 @@
 Tests for the GameBoard class.
 """
 
-import pytest
-from board import GameBoard, Node
-from player import Player, PlayerSide
+from komikan.board import Node
+from komikan.player import Player, PlayerSide
 
 
 class TestNode:
@@ -97,7 +96,9 @@ class TestGameBoard:
         assert empty_board.is_disabled_path(1, 2, 1, 3)  # Triangle path
 
         # Test bidirectional paths
-        assert empty_board.is_disabled_path(0, 1, 0, 2) == empty_board.is_disabled_path(0, 2, 0, 1)
+        assert empty_board.is_disabled_path(0, 1, 0, 2) == empty_board.is_disabled_path(
+            0, 2, 0, 1
+        )
 
     def test_place_player(self, empty_board, north_player):
         """Test placing a player on the board."""
@@ -108,7 +109,9 @@ class TestGameBoard:
         assert node.occupied_by == north_player
         assert node.is_occupied()
 
-    def test_place_player_occupied_position(self, empty_board, north_player, south_player):
+    def test_place_player_occupied_position(
+        self, empty_board, north_player, south_player
+    ):
         """Test placing player on occupied position."""
         empty_board.place_player(north_player, 2, 3)
         success = empty_board.place_player(south_player, 2, 3)
@@ -139,7 +142,9 @@ class TestBoardMovement:
         assert not empty_board.is_valid_move(2, 2, 2, 4)  # Two steps south
         assert not empty_board.is_valid_move(2, 2, 4, 4)  # Far diagonal
 
-    def test_is_valid_move_occupied_target(self, empty_board, north_player, south_player):
+    def test_is_valid_move_occupied_target(
+        self, empty_board, north_player, south_player
+    ):
         """Test move to occupied position."""
         empty_board.place_player(north_player, 2, 2)
         empty_board.place_player(south_player, 2, 3)
@@ -202,7 +207,9 @@ class TestBoardCapture:
         assert not board.is_valid_capture(2, 2, 2, 3, north_player)  # 1 step
         assert not board.is_valid_capture(2, 2, 2, 5, north_player)  # 3 steps
 
-    def test_is_valid_capture_occupied_target(self, capture_scenario_board, south_player):
+    def test_is_valid_capture_occupied_target(
+        self, capture_scenario_board, south_player
+    ):
         """Test capture to occupied position."""
         board, north_player, _ = capture_scenario_board
 
@@ -245,7 +252,9 @@ class TestBoardCapture:
         """Test invalid capture execution."""
         board, north_player, south_player = capture_scenario_board
 
-        success, captured_player = board.capture_move(north_player, 2, 2, 2, 3)  # Wrong distance
+        success, captured_player = board.capture_move(
+            north_player, 2, 2, 2, 3
+        )  # Wrong distance
         assert not success
         assert captured_player is None
 

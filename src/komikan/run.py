@@ -5,13 +5,13 @@ A 5x8 node grid game where two players start on opposite sides and move orthogon
 
 import pygame
 import sys
-from board import GameBoard
-from player import GameState, PlayerSide
+from komikan.board import GameBoard
+from komikan.player import GameState, PlayerSide
 import os
 import logging
 import json
 from datetime import datetime
-from typing import Optional, Dict, Any
+from typing import Optional
 
 
 DEBUG_MODE = os.getenv("KOMIKAN_DEBUG", "0") == "1"
@@ -20,11 +20,8 @@ DEBUG_MODE = os.getenv("KOMIKAN_DEBUG", "0") == "1"
 if DEBUG_MODE:
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler('komikan_game.log'),
-            logging.StreamHandler()
-        ]
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        handlers=[logging.FileHandler("komikan_game.log"), logging.StreamHandler()],
     )
     logger = logging.getLogger(__name__)
 else:
@@ -67,31 +64,46 @@ class GameLogger:
         logger.info("North player: 1 token at (2, 0)")
         logger.info("South player: 12 tokens across bottom two rows")
 
-    def log_move_attempt(self, player_side: PlayerSide, from_pos: tuple, to_pos: tuple,
-                        token_number: Optional[int] = None, is_capture: bool = False) -> dict:
+    def log_move_attempt(
+        self,
+        player_side: PlayerSide,
+        from_pos: tuple,
+        to_pos: tuple,
+        token_number: Optional[int] = None,
+        is_capture: bool = False,
+    ) -> dict:
         """Log a movement attempt and return the log entry."""
         self.move_count += 1
         log_entry = {
             "timestamp": datetime.now().isoformat(),
-            "game_time_seconds": (datetime.now() - self.game_start_time).total_seconds(),
+            "game_time_seconds": (
+                datetime.now() - self.game_start_time
+            ).total_seconds(),
             "move_number": self.move_count,
             "player": player_side.value,
             "from_position": from_pos,
             "to_position": to_pos,
             "token_number": token_number,
             "is_capture_attempt": is_capture,
-            "action_type": "capture" if is_capture else "move"
+            "action_type": "capture" if is_capture else "move",
         }
 
         if DEBUG_MODE:
             token_info = f" (token #{token_number})" if token_number is not None else ""
             action = "CAPTURE ATTEMPT" if is_capture else "MOVE ATTEMPT"
-            logger.debug(f"{action}: {player_side.value.upper()}{token_info} {from_pos} -> {to_pos}")
+            logger.debug(
+                f"{action}: {player_side.value.upper()}{token_info} {from_pos} -> {to_pos}"
+            )
 
         return log_entry
 
-    def log_move_result(self, log_entry: dict, success: bool, captured_token: Optional[int] = None,
-                       failure_reason: Optional[str] = None):
+    def log_move_result(
+        self,
+        log_entry: dict,
+        success: bool,
+        captured_token: Optional[int] = None,
+        failure_reason: Optional[str] = None,
+    ):
         """Log the result of a movement attempt."""
         log_entry["success"] = success
         log_entry["captured_token_number"] = captured_token
@@ -101,9 +113,13 @@ class GameLogger:
         if DEBUG_MODE:
             if success:
                 if log_entry["is_capture_attempt"] and captured_token is not None:
-                    logger.info(f"✓ CAPTURE SUCCESS: Captured south token #{captured_token}")
+                    logger.info(
+                        f"✓ CAPTURE SUCCESS: Captured south token #{captured_token}"
+                    )
                 else:
-                    logger.info(f"✓ MOVE SUCCESS: {log_entry['player'].upper()} moved to {log_entry['to_position']}")
+                    logger.info(
+                        f"✓ MOVE SUCCESS: {log_entry['player'].upper()} moved to {log_entry['to_position']}"
+                    )
             else:
                 logger.warning(f"✗ MOVE FAILED: {failure_reason}")
 
@@ -113,10 +129,18 @@ class GameLogger:
     def log_game_state(self, game_state: GameState):
         """Log current game state for debugging."""
         if DEBUG_MODE:
-            north_pos = game_state.player_north.positions[0] if game_state.player_north.positions else "eliminated"
+            north_pos = (
+                game_state.player_north.positions[0]
+                if game_state.player_north.positions
+                else "eliminated"
+            )
             south_count = len(game_state.player_south.positions)
-            logger.debug(f"GAME_STATE: North at {north_pos}, South has {south_count} tokens")
-            logger.debug(f"POSITIONS: South tokens at {game_state.player_south.positions}")
+            logger.debug(
+                f"GAME_STATE: North at {north_pos}, South has {south_count} tokens"
+            )
+            logger.debug(
+                f"POSITIONS: South tokens at {game_state.player_south.positions}"
+            )
 
 
 class GameRenderer:
@@ -453,7 +477,9 @@ class Game:
         else:
             failure_reason = "Move validation failed"
             if not self.board.is_valid_move(from_x, from_y, to_x, to_y):
-                failure_reason = "Invalid move - position blocked, out of bounds, or path disabled"
+                failure_reason = (
+                    "Invalid move - position blocked, out of bounds, or path disabled"
+                )
 
             self.game_logger.log_move_result(log_entry, False, None, failure_reason)
 
@@ -486,7 +512,9 @@ class Game:
             # Get captured token number
             captured_token_number = None
             if captured_player and captured_pos in captured_player.positions:
-                captured_token_number = captured_player.get_token_number(captured_pos[0], captured_pos[1])
+                captured_token_number = captured_player.get_token_number(
+                    captured_pos[0], captured_pos[1]
+                )
 
             self.game_logger.log_move_result(log_entry, True, captured_token_number)
             self.game_logger.log_game_state(self.game_state)

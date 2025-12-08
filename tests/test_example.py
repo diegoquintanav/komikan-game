@@ -4,8 +4,8 @@ This file demonstrates testing patterns and can be used as a template.
 """
 
 import pytest
-from board import GameBoard
-from player import Player, PlayerSide, GameState
+from komikan.board import GameBoard
+from komikan.player import Player, PlayerSide, GameState
 
 
 class TestExample:
@@ -23,7 +23,9 @@ class TestExample:
         assert empty_board.get_node(0, 0) is not None
         assert empty_board.get_node(2, 3) is not None
 
-    def test_example_with_multiple_fixtures(self, empty_board, north_player, south_player):
+    def test_example_with_multiple_fixtures(
+        self, empty_board, north_player, south_player
+    ):
         """Example using multiple fixtures."""
         # Place players and test interaction
         empty_board.place_player(north_player, 1, 1)
@@ -45,14 +47,17 @@ class TestExample:
         for x, y in invalid_positions:
             assert not empty_board.is_valid_position(x, y)
 
-    @pytest.mark.parametrize("x,y,expected", [
-        (0, 0, True),   # Valid corner
-        (2, 4, True),   # Valid center
-        (4, 7, True),   # Valid corner
-        (-1, 0, False), # Invalid (out of bounds)
-        (5, 0, False),  # Invalid (out of bounds)
-        (0, 8, False),  # Invalid (out of bounds)
-    ])
+    @pytest.mark.parametrize(
+        "x,y,expected",
+        [
+            (0, 0, True),  # Valid corner
+            (2, 4, True),  # Valid center
+            (4, 7, True),  # Valid corner
+            (-1, 0, False),  # Invalid (out of bounds)
+            (5, 0, False),  # Invalid (out of bounds)
+            (0, 8, False),  # Invalid (out of bounds)
+        ],
+    )
     def test_example_parametrize_decorator(self, empty_board, x, y, expected):
         """Example using pytest parametrize decorator."""
         assert empty_board.is_valid_position(x, y) == expected
@@ -104,9 +109,7 @@ class TestExample:
         new_pos = (old_pos[0], old_pos[1] + 1)
 
         success = board.move_player(
-            game_state.player_north,
-            old_pos[0], old_pos[1],
-            new_pos[0], new_pos[1]
+            game_state.player_north, old_pos[0], old_pos[1], new_pos[0], new_pos[1]
         )
 
         if success:

@@ -2,8 +2,7 @@
 Tests for Player and GameState classes.
 """
 
-import pytest
-from player import Player, PlayerSide, GameState
+from komikan.player import Player, PlayerSide
 
 
 class TestPlayerSide:

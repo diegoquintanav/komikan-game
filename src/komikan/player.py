@@ -3,7 +3,6 @@ Player classes for the Komikan board game.
 Manages player state and rendering.
 """
 
-import pygame
 from enum import Enum
 from typing import Tuple
 

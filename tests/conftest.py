@@ -6,12 +6,8 @@ import pytest
 import sys
 import os
 
-# Add the parent directory to sys.path so we can import game modules
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from board import GameBoard, Node
-from player import Player, PlayerSide, GameState
-
+from komikan.board import GameBoard
+from komikan.player import Player, PlayerSide, GameState
 
 @pytest.fixture
 def empty_board():

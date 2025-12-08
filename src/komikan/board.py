@@ -3,11 +3,11 @@ Game board for the Komikan board game.
 Manages the 5x8 node grid and validates player movements.
 """
 
-import pygame
 from typing import List, Tuple, Optional
 import logging
 
-logger =logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
+
 
 class Node:
     """Represents a single node on the game board."""
@@ -157,16 +157,20 @@ class GameBoard:
 
         return adjacent
 
-    def is_valid_capture(self, from_x: int, from_y: int, to_x: int, to_y: int, attacker: "Player") -> bool:
+    def is_valid_capture(
+        self, from_x: int, from_y: int, to_x: int, to_y: int, attacker: "Player"
+    ) -> bool:
         """Check if a capture move is valid (jump over enemy to land on empty space)."""
         # Calculate direction and distance
         dx = to_x - from_x
         dy = to_y - from_y
 
         # Must be exactly 2 steps in one of 8 directions
-        if not ((abs(dx) == 2 and dy == 0) or  # Horizontal
-                (dx == 0 and abs(dy) == 2) or  # Vertical
-                (abs(dx) == 2 and abs(dy) == 2)):  # Diagonal
+        if not (
+            (abs(dx) == 2 and dy == 0)  # Horizontal
+            or (dx == 0 and abs(dy) == 2)  # Vertical
+            or (abs(dx) == 2 and abs(dy) == 2)
+        ):  # Diagonal
             return False
 
         # Calculate middle position (jumped-over piece)
@@ -174,16 +178,22 @@ class GameBoard:
         middle_y = from_y + dy // 2
 
         # Check bounds
-        if not (self.is_valid_position(middle_x, middle_y) and self.is_valid_position(to_x, to_y)):
+        if not (
+            self.is_valid_position(middle_x, middle_y)
+            and self.is_valid_position(to_x, to_y)
+        ):
             return False
 
         # Check if positions are disabled
-        if self.is_disabled_node(middle_x, middle_y) or self.is_disabled_node(to_x, to_y):
+        if self.is_disabled_node(middle_x, middle_y) or self.is_disabled_node(
+            to_x, to_y
+        ):
             return False
 
         # Check if paths are disabled
-        if (self.is_disabled_path(from_x, from_y, middle_x, middle_y) or
-            self.is_disabled_path(middle_x, middle_y, to_x, to_y)):
+        if self.is_disabled_path(
+            from_x, from_y, middle_x, middle_y
+        ) or self.is_disabled_path(middle_x, middle_y, to_x, to_y):
             return False
 
         # Get nodes
@@ -227,10 +237,14 @@ class GameBoard:
         target_node = self.get_node(to_x, to_y)
         return target_node is not None and not target_node.is_occupied()
 
-    def capture_move(self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int) -> tuple[bool, "Player"]:
+    def capture_move(
+        self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int
+    ) -> tuple[bool, "Player"]:
         """Execute a capture move. Returns (success, captured_player)."""
         if not self.is_valid_capture(from_x, from_y, to_x, to_y, player):
-            logger.debug(f"Invalid capture from ({from_x},{from_y}) to ({to_x},{to_y}) by {player}")
+            logger.debug(
+                f"Invalid capture from ({from_x},{from_y}) to ({to_x},{to_y}) by {player}"
+            )
             return False, None
 
         # Calculate middle position
