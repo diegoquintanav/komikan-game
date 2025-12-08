@@ -1,8 +1,6 @@
 name: Update Changelog
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
 
 jobs:
@@ -31,33 +29,9 @@ jobs:
       - name: Check if changelog update is needed
         id: check
         run: |
-          # Get the list of commits since last tag or base branch
-          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
-            LAST_TAG=$(git describe --tags --abbrev=0)
-            COMMITS=$(git rev-list ${LAST_TAG}..HEAD --oneline)
-          else
-            # If no tags exist, check commits in this PR or recent commits
-            if [ -n \"${{ github.event.pull_request.base.ref }}\" ]; then
-              BASE_BRANCH=\"${{ github.event.pull_request.base.ref }}\"
-              git fetch origin ${BASE_BRANCH}
-              COMMITS=$(git rev-list origin/${BASE_BRANCH}..HEAD --oneline)
-            else
-              # Fallback to recent commits
-              COMMITS=$(git log --oneline -10)
-            fi
-          fi
-
-          echo "Recent commits:"
-          echo "$COMMITS"
-
-          # Check if there are any conventional commits that would generate changelog entries
-          if echo "$COMMITS" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\(.+\))?\!?:" >/dev/null; then
-            echo "needs-update=true" >> $GITHUB_OUTPUT
-            echo "✅ Conventional commits found - changelog update needed"
-          else
-            echo "needs-update=false" >> $GITHUB_OUTPUT
-            echo "ℹ️ No conventional commits found - no changelog update needed"
-          fi
+          # Simple check - always update for manual trigger
+          echo "needs-update=true" >> $GITHUB_OUTPUT
+          echo "✅ Manual changelog update triggered"
 
   update-changelog:
     name: Update Changelog
