@@ -11,4 +11,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "commitizen>=4.10.0",
+    "ruff>=0.14.8",
 ]
