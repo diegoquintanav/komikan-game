@@ -8,8 +8,8 @@ from typing import Tuple
 
 
 class PlayerSide(Enum):
-    NORTH = "north"
-    SOUTH = "south"
+    NORTH = "pangui"
+    SOUTH = "pu trewa"
 
 
 class Player:
