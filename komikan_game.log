@@ -87,3 +87,209 @@
 2025-12-08 17:37:08,419 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 2) -> (2, 4)
 2025-12-08 17:37:08,419 - WARNING - ✗ MOVE FAILED: Invalid move - position blocked, out of bounds, or path disabled
 2025-12-08 17:37:08,419 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:37:08.419438", "game_time_seconds": 12.020184, "move_number": 5, "player": "pangui", "from_position": [2, 2], "to_position": [2, 4], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Invalid move - position blocked, out of bounds, or path disabled", "result_timestamp": "2025-12-08T17:37:08.419597"}
+2025-12-08 17:40:37,524 - INFO - === KOMIKAN GAME STARTED ===
+2025-12-08 17:40:37,524 - INFO - Game start time: 2025-12-08T17:40:37.524174
+2025-12-08 17:40:37,524 - INFO - North player: 1 token at (2, 0)
+2025-12-08 17:40:37,524 - INFO - South player: 12 tokens across bottom two rows
+2025-12-08 17:40:39,875 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 0) -> (2, 1)
+2025-12-08 17:40:39,875 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 1)
+2025-12-08 17:40:39,876 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:39.875274", "game_time_seconds": 2.351111, "move_number": 1, "player": "pangui", "from_position": [2, 0], "to_position": [2, 1], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:39.875520"}
+2025-12-08 17:40:39,876 - DEBUG - GAME_STATE: North at (2, 0), South has 12 tokens
+2025-12-08 17:40:39,876 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:40:44,224 - DEBUG - MOVE ATTEMPT: PU TREWA (token #5) (2, 6) -> (2, 5)
+2025-12-08 17:40:44,224 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 5)
+2025-12-08 17:40:44,224 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:44.224294", "game_time_seconds": 6.700127, "move_number": 2, "player": "pu trewa", "from_position": [2, 6], "to_position": [2, 5], "token_number": 5, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:44.224450"}
+2025-12-08 17:40:44,224 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:40:44,224 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:40:44,890 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 1) -> (2, 2)
+2025-12-08 17:40:44,890 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 2)
+2025-12-08 17:40:44,890 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:44.890451", "game_time_seconds": 7.366289, "move_number": 3, "player": "pangui", "from_position": [2, 1], "to_position": [2, 2], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:44.890644"}
+2025-12-08 17:40:44,890 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:40:44,890 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:40:46,342 - DEBUG - MOVE ATTEMPT: PU TREWA (token #12) (2, 5) -> (2, 4)
+2025-12-08 17:40:46,342 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 4)
+2025-12-08 17:40:46,343 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:46.342755", "game_time_seconds": 8.818591, "move_number": 4, "player": "pu trewa", "from_position": [2, 5], "to_position": [2, 4], "token_number": 12, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:46.342944"}
+2025-12-08 17:40:46,343 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:40:46,343 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:40:47,821 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 2) -> (2, 3)
+2025-12-08 17:40:47,821 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 3)
+2025-12-08 17:40:47,821 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:47.821418", "game_time_seconds": 10.297251, "move_number": 5, "player": "pangui", "from_position": [2, 2], "to_position": [2, 3], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:47.821561"}
+2025-12-08 17:40:47,821 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:40:47,821 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:40:49,893 - DEBUG - MOVE ATTEMPT: PU TREWA (token #9) (2, 7) -> (2, 6)
+2025-12-08 17:40:49,893 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 6)
+2025-12-08 17:40:49,894 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:49.893667", "game_time_seconds": 12.369502, "move_number": 6, "player": "pu trewa", "from_position": [2, 7], "to_position": [2, 6], "token_number": 9, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:40:49.893900"}
+2025-12-08 17:40:49,894 - DEBUG - GAME_STATE: North at (2, 3), South has 12 tokens
+2025-12-08 17:40:49,894 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:40:56,089 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:40:56,089 - WARNING - ✗ MOVE FAILED: Invalid move - position blocked, out of bounds, or path disabled
+2025-12-08 17:40:56,089 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:40:56.089307", "game_time_seconds": 18.565148, "move_number": 7, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Invalid move - position blocked, out of bounds, or path disabled", "result_timestamp": "2025-12-08T17:40:56.089522"}
+2025-12-08 17:51:21,523 - INFO - === KOMIKAN GAME STARTED ===
+2025-12-08 17:51:21,524 - INFO - Game start time: 2025-12-08T17:51:21.523810
+2025-12-08 17:51:21,524 - INFO - North player: 1 token at (2, 0)
+2025-12-08 17:51:21,524 - INFO - South player: 12 tokens across bottom two rows
+2025-12-08 17:51:23,243 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 0) -> (2, 1)
+2025-12-08 17:51:23,244 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 1)
+2025-12-08 17:51:23,244 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:23.243805", "game_time_seconds": 1.72003, "move_number": 1, "player": "pangui", "from_position": [2, 0], "to_position": [2, 1], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:23.244130"}
+2025-12-08 17:51:23,244 - DEBUG - GAME_STATE: North at (2, 0), South has 12 tokens
+2025-12-08 17:51:23,244 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:51:26,982 - DEBUG - MOVE ATTEMPT: PU TREWA (token #5) (2, 6) -> (2, 5)
+2025-12-08 17:51:26,982 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 5)
+2025-12-08 17:51:26,982 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:26.982126", "game_time_seconds": 5.458332, "move_number": 2, "player": "pu trewa", "from_position": [2, 6], "to_position": [2, 5], "token_number": 5, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:26.982448"}
+2025-12-08 17:51:26,982 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:51:26,982 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:51:29,349 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 1) -> (2, 2)
+2025-12-08 17:51:29,349 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 2)
+2025-12-08 17:51:29,350 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:29.349311", "game_time_seconds": 7.825515, "move_number": 3, "player": "pangui", "from_position": [2, 1], "to_position": [2, 2], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:29.349684"}
+2025-12-08 17:51:29,350 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:51:29,350 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:51:31,676 - DEBUG - MOVE ATTEMPT: PU TREWA (token #12) (2, 5) -> (2, 4)
+2025-12-08 17:51:31,677 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 4)
+2025-12-08 17:51:31,677 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:31.676788", "game_time_seconds": 10.152991, "move_number": 4, "player": "pu trewa", "from_position": [2, 5], "to_position": [2, 4], "token_number": 12, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:31.677000"}
+2025-12-08 17:51:31,677 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:51:31,677 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:51:33,691 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 2) -> (2, 3)
+2025-12-08 17:51:33,691 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 3)
+2025-12-08 17:51:33,691 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:33.691061", "game_time_seconds": 12.167263, "move_number": 5, "player": "pangui", "from_position": [2, 2], "to_position": [2, 3], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:33.691282"}
+2025-12-08 17:51:33,691 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:51:33,691 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:51:36,304 - DEBUG - MOVE ATTEMPT: PU TREWA (token #5) (3, 6) -> (2, 5)
+2025-12-08 17:51:36,305 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 5)
+2025-12-08 17:51:36,305 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:36.304928", "game_time_seconds": 14.78113, "move_number": 6, "player": "pu trewa", "from_position": [3, 6], "to_position": [2, 5], "token_number": 5, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:36.305190"}
+2025-12-08 17:51:36,305 - DEBUG - GAME_STATE: North at (2, 3), South has 12 tokens
+2025-12-08 17:51:36,305 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:51:39,552 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 3) -> (3, 4)
+2025-12-08 17:51:39,553 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (3, 4)
+2025-12-08 17:51:39,553 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:39.552854", "game_time_seconds": 18.029058, "move_number": 7, "player": "pangui", "from_position": [2, 3], "to_position": [3, 4], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:39.553063"}
+2025-12-08 17:51:39,553 - DEBUG - GAME_STATE: North at (2, 3), South has 12 tokens
+2025-12-08 17:51:39,553 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4), (2, 5)]
+2025-12-08 17:51:41,388 - DEBUG - MOVE ATTEMPT: PU TREWA (token #12) (2, 5) -> (1, 5)
+2025-12-08 17:51:41,389 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (1, 5)
+2025-12-08 17:51:41,389 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:41.388708", "game_time_seconds": 19.864914, "move_number": 8, "player": "pu trewa", "from_position": [2, 5], "to_position": [1, 5], "token_number": 12, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:51:41.389032"}
+2025-12-08 17:51:41,389 - DEBUG - GAME_STATE: North at (3, 4), South has 12 tokens
+2025-12-08 17:51:41,389 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4), (2, 5)]
+2025-12-08 17:51:43,301 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (3, 4) -> (1, 4)
+2025-12-08 17:51:43,301 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:51:43,301 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:51:43.301204", "game_time_seconds": 21.777403, "move_number": 9, "player": "pangui", "from_position": [3, 4], "to_position": [1, 4], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:51:43.301398"}
+2025-12-08 17:52:04,963 - INFO - === KOMIKAN GAME STARTED ===
+2025-12-08 17:52:04,964 - INFO - Game start time: 2025-12-08T17:52:04.963792
+2025-12-08 17:52:04,964 - INFO - North player: 1 token at (2, 0)
+2025-12-08 17:52:04,964 - INFO - South player: 12 tokens across bottom two rows
+2025-12-08 17:52:09,307 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 0) -> (2, 1)
+2025-12-08 17:52:09,307 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 1)
+2025-12-08 17:52:09,307 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:09.307552", "game_time_seconds": 4.343771, "move_number": 1, "player": "pangui", "from_position": [2, 0], "to_position": [2, 1], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:09.307782"}
+2025-12-08 17:52:09,308 - DEBUG - GAME_STATE: North at (2, 0), South has 12 tokens
+2025-12-08 17:52:09,308 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:52:13,003 - DEBUG - MOVE ATTEMPT: PU TREWA (token #5) (2, 6) -> (2, 5)
+2025-12-08 17:52:13,003 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 5)
+2025-12-08 17:52:13,003 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:13.003544", "game_time_seconds": 8.03976, "move_number": 2, "player": "pu trewa", "from_position": [2, 6], "to_position": [2, 5], "token_number": 5, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:13.003734"}
+2025-12-08 17:52:13,003 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:52:13,004 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:52:15,608 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 1) -> (2, 2)
+2025-12-08 17:52:15,609 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 2)
+2025-12-08 17:52:15,609 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:15.608902", "game_time_seconds": 10.645123, "move_number": 3, "player": "pangui", "from_position": [2, 1], "to_position": [2, 2], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:15.609099"}
+2025-12-08 17:52:15,609 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:52:15,609 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:52:17,294 - DEBUG - MOVE ATTEMPT: PU TREWA (token #12) (2, 5) -> (2, 4)
+2025-12-08 17:52:17,295 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 4)
+2025-12-08 17:52:17,295 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:17.294950", "game_time_seconds": 12.331167, "move_number": 4, "player": "pu trewa", "from_position": [2, 5], "to_position": [2, 4], "token_number": 12, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:17.295122"}
+2025-12-08 17:52:17,295 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:52:17,295 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 5)]
+2025-12-08 17:52:19,173 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 2) -> (2, 3)
+2025-12-08 17:52:19,173 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 3)
+2025-12-08 17:52:19,174 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:19.173752", "game_time_seconds": 14.209971, "move_number": 5, "player": "pangui", "from_position": [2, 2], "to_position": [2, 3], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:19.173972"}
+2025-12-08 17:52:19,174 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:52:19,174 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:52:21,023 - DEBUG - MOVE ATTEMPT: PU TREWA (token #9) (2, 7) -> (2, 6)
+2025-12-08 17:52:21,023 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 6)
+2025-12-08 17:52:21,023 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:21.023160", "game_time_seconds": 16.059378, "move_number": 6, "player": "pu trewa", "from_position": [2, 7], "to_position": [2, 6], "token_number": 9, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:52:21.023366"}
+2025-12-08 17:52:21,023 - DEBUG - GAME_STATE: North at (2, 3), South has 12 tokens
+2025-12-08 17:52:21,023 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (2, 4)]
+2025-12-08 17:52:23,414 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:23,415 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:23,415 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:23.414940", "game_time_seconds": 18.451156, "move_number": 7, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:23.415112"}
+2025-12-08 17:52:24,199 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:24,199 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:24,200 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:24.199720", "game_time_seconds": 19.235937, "move_number": 8, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:24.199903"}
+2025-12-08 17:52:24,430 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:24,431 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:24,431 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:24.430862", "game_time_seconds": 19.467076, "move_number": 9, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:24.431030"}
+2025-12-08 17:52:24,658 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:24,658 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:24,658 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:24.658296", "game_time_seconds": 19.694511, "move_number": 10, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:24.658481"}
+2025-12-08 17:52:24,936 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:24,936 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:24,936 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:24.936403", "game_time_seconds": 19.972624, "move_number": 11, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:24.936669"}
+2025-12-08 17:52:25,152 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:25,152 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:25,152 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:25.152340", "game_time_seconds": 20.18856, "move_number": 12, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:25.152509"}
+2025-12-08 17:52:25,913 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:25,913 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:25,914 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:25.913699", "game_time_seconds": 20.949916, "move_number": 13, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:25.913905"}
+2025-12-08 17:52:26,105 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:26,105 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:26,111 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:26.105551", "game_time_seconds": 21.141768, "move_number": 14, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:26.105774"}
+2025-12-08 17:52:26,330 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:26,330 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:26,330 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:26.330099", "game_time_seconds": 21.366317, "move_number": 15, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:26.330287"}
+2025-12-08 17:52:26,818 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:26,818 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:26,818 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:26.818414", "game_time_seconds": 21.854632, "move_number": 16, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:26.818603"}
+2025-12-08 17:52:26,994 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:26,994 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:26,994 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:26.994668", "game_time_seconds": 22.03089, "move_number": 17, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:26.994874"}
+2025-12-08 17:52:27,170 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:27,170 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:27,170 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:27.170434", "game_time_seconds": 22.206652, "move_number": 18, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:27.170620"}
+2025-12-08 17:52:27,671 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:27,671 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:27,672 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:27.671691", "game_time_seconds": 22.707908, "move_number": 19, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:27.671907"}
+2025-12-08 17:52:27,865 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:27,865 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:27,865 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:27.865641", "game_time_seconds": 22.901862, "move_number": 20, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:27.865824"}
+2025-12-08 17:52:28,028 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:28,028 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:28,028 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:28.028543", "game_time_seconds": 23.064763, "move_number": 21, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:28.028731"}
+2025-12-08 17:52:29,215 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:52:29,215 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:52:29,215 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:52:29.215274", "game_time_seconds": 24.251495, "move_number": 22, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:52:29.215575"}
+2025-12-08 17:53:08,060 - INFO - === KOMIKAN GAME STARTED ===
+2025-12-08 17:53:08,061 - INFO - Game start time: 2025-12-08T17:53:08.060840
+2025-12-08 17:53:08,061 - INFO - North player: 1 token at (2, 0)
+2025-12-08 17:53:08,061 - INFO - South player: 12 tokens across bottom two rows
+2025-12-08 17:53:13,288 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 0) -> (2, 1)
+2025-12-08 17:53:13,288 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 1)
+2025-12-08 17:53:13,288 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:13.288452", "game_time_seconds": 5.227621, "move_number": 1, "player": "pangui", "from_position": [2, 0], "to_position": [2, 1], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:13.288642"}
+2025-12-08 17:53:13,288 - DEBUG - GAME_STATE: North at (2, 0), South has 12 tokens
+2025-12-08 17:53:13,288 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:53:15,134 - DEBUG - MOVE ATTEMPT: PU TREWA (token #1) (0, 5) -> (0, 4)
+2025-12-08 17:53:15,134 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (0, 4)
+2025-12-08 17:53:15,134 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:15.134136", "game_time_seconds": 7.073311, "move_number": 2, "player": "pu trewa", "from_position": [0, 5], "to_position": [0, 4], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:15.134484"}
+2025-12-08 17:53:15,134 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:53:15,134 - DEBUG - POSITIONS: South tokens at [(0, 5), (4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7)]
+2025-12-08 17:53:17,844 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 1) -> (2, 2)
+2025-12-08 17:53:17,844 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 2)
+2025-12-08 17:53:17,844 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:17.844108", "game_time_seconds": 9.783279, "move_number": 3, "player": "pangui", "from_position": [2, 1], "to_position": [2, 2], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:17.844295"}
+2025-12-08 17:53:17,844 - DEBUG - GAME_STATE: North at (2, 1), South has 12 tokens
+2025-12-08 17:53:17,844 - DEBUG - POSITIONS: South tokens at [(4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (0, 4)]
+2025-12-08 17:53:19,831 - DEBUG - MOVE ATTEMPT: PU TREWA (token #4) (2, 6) -> (2, 5)
+2025-12-08 17:53:19,831 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 5)
+2025-12-08 17:53:19,831 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:19.831309", "game_time_seconds": 11.770478, "move_number": 4, "player": "pu trewa", "from_position": [2, 6], "to_position": [2, 5], "token_number": 4, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:19.831492"}
+2025-12-08 17:53:19,831 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:53:19,831 - DEBUG - POSITIONS: South tokens at [(4, 5), (0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (0, 4)]
+2025-12-08 17:53:22,800 - DEBUG - MOVE ATTEMPT: PANGUI (token #1) (2, 2) -> (2, 3)
+2025-12-08 17:53:22,800 - INFO - ✓ MOVE SUCCESS: PANGUI moved to (2, 3)
+2025-12-08 17:53:22,800 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:22.800518", "game_time_seconds": 14.739689, "move_number": 5, "player": "pangui", "from_position": [2, 2], "to_position": [2, 3], "token_number": 1, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:22.800706"}
+2025-12-08 17:53:22,800 - DEBUG - GAME_STATE: North at (2, 2), South has 12 tokens
+2025-12-08 17:53:22,800 - DEBUG - POSITIONS: South tokens at [(4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (0, 4), (2, 5)]
+2025-12-08 17:53:24,289 - DEBUG - MOVE ATTEMPT: PU TREWA (token #12) (2, 5) -> (2, 4)
+2025-12-08 17:53:24,289 - INFO - ✓ MOVE SUCCESS: PU TREWA moved to (2, 4)
+2025-12-08 17:53:24,289 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:24.289613", "game_time_seconds": 16.228785, "move_number": 6, "player": "pu trewa", "from_position": [2, 5], "to_position": [2, 4], "token_number": 12, "is_capture_attempt": false, "action_type": "move", "success": true, "captured_token_number": null, "failure_reason": null, "result_timestamp": "2025-12-08T17:53:24.289818"}
+2025-12-08 17:53:24,289 - DEBUG - GAME_STATE: North at (2, 3), South has 12 tokens
+2025-12-08 17:53:24,290 - DEBUG - POSITIONS: South tokens at [(4, 5), (0, 6), (1, 6), (3, 6), (4, 6), (0, 7), (1, 7), (2, 7), (3, 7), (4, 7), (0, 4), (2, 5)]
+2025-12-08 17:53:26,698 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:53:26,698 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:53:26,698 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:26.698200", "game_time_seconds": 18.637372, "move_number": 7, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:53:26.698428"}
+2025-12-08 17:53:27,588 - DEBUG - CAPTURE ATTEMPT: PANGUI (token #1) (2, 3) -> (2, 5)
+2025-12-08 17:53:27,588 - WARNING - ✗ MOVE FAILED: Move validation failed
+2025-12-08 17:53:27,589 - DEBUG - GAME_EVENT: {"timestamp": "2025-12-08T17:53:27.588698", "game_time_seconds": 19.527871, "move_number": 8, "player": "pangui", "from_position": [2, 3], "to_position": [2, 5], "token_number": 1, "is_capture_attempt": true, "action_type": "capture", "success": false, "captured_token_number": null, "failure_reason": "Move validation failed", "result_timestamp": "2025-12-08T17:53:27.588938"}

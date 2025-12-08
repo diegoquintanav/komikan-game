@@ -75,6 +75,39 @@ Built with modern Python tooling:
 - **pygame 2.6.1**: Game engine and rendering
 - **UV**: Package management and virtual environment
 - **Commitizen**: Conventional commits and versioning
+- **pytest**: Comprehensive test suite with 54 tests
+
+### Testing
+
+Run the comprehensive test suite:
+
+```bash
+# Run all tests
+uv run pytest tests/ -v
+
+# Or use the test runner script
+python run_tests.py all
+
+# Run specific test categories
+python run_tests.py board      # Board logic tests
+python run_tests.py player     # Player and game state tests
+python run_tests.py integration # Integration and scenario tests
+python run_tests.py performance # Performance and memory tests
+
+# Quick test run (stop on first failure)
+python run_tests.py fast
+
+# Test with coverage report
+python run_tests.py coverage
+```
+
+**Test Coverage**: 54 comprehensive tests covering:
+- Node and board mechanics
+- Movement validation and path restrictions
+- Capture logic and edge cases
+- Player management and game state
+- Integration scenarios and complete gameplay
+- Performance and memory usage validation
 
 ### Project Structure
 ```

@@ -5,7 +5,9 @@ Manages the 5x8 node grid and validates player movements.
 
 import pygame
 from typing import List, Tuple, Optional
+import logging
 
+logger =logging.getLogger(__name__)
 
 class Node:
     """Represents a single node on the game board."""
@@ -199,8 +201,8 @@ class GameBoard:
         if target_node.is_occupied():
             return False
 
-        # Middle piece must be enemy (different player)
-        return middle_node.occupied_by != attacker
+        # Middle piece must be enemy (different side)
+        return middle_node.occupied_by.side != attacker.side
 
     def is_valid_move(self, from_x: int, from_y: int, to_x: int, to_y: int) -> bool:
         """Check if a move is valid (adjacent and target not occupied)."""
@@ -228,6 +230,7 @@ class GameBoard:
     def capture_move(self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int) -> tuple[bool, "Player"]:
         """Execute a capture move. Returns (success, captured_player)."""
         if not self.is_valid_capture(from_x, from_y, to_x, to_y, player):
+            logger.debug(f"Invalid capture from ({from_x},{from_y}) to ({to_x},{to_y}) by {player}")
             return False, None
 
         # Calculate middle position
