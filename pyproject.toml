@@ -1,12 +1,23 @@
 [project]
-name = "komikan-game"
-version = "0.1.0"
-description = "Add your description here"
+dependencies = [
+  "pygame>=2.6.1",
+]
+description = "A pygame version of the Komikan Game (<https://adriancheuquepan.cl/komikan/>)"
+name = "komikan"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = []
+version = "0.1.0"
 
 [dependency-groups]
 dev = [
-    "commitizen>=4.10.0",
+  "commitizen>=4.10.0",
+  "pytest>=9.0.2",
+  "ruff>=0.14.8",
 ]
+
+[project.scripts]
+komikan = "komikan:run.main"
+
+[build-system]
+build-backend = "uv_build"
+requires = ["uv_build>=0.9.16,<0.10.0"]
