@@ -2,6 +2,7 @@
 Player classes for the Komikan board game.
 Manages player state and rendering.
 """
+
 import pygame
 from enum import Enum
 from typing import Tuple
@@ -18,20 +19,36 @@ class Player:
     def __init__(self, side: PlayerSide, color: Tuple[int, int, int]):
         self.side = side
         self.color = color
-        self.x = 0
-        self.y = 0
+        self.positions = []  # List of (x, y) tuples for multiple tokens
 
     def get_starting_positions(self) -> list[Tuple[int, int]]:
         """Get valid starting positions for this player."""
         if self.side == PlayerSide.NORTH:
-            # Top row (y=0)
-            return [(x, 0) for x in range(5)]
+            # Top row (y=0) - single token
+            return [(2, 0)]
         else:  # PlayerSide.SOUTH
-            # Bottom row (y=7)
-            return [(x, 7) for x in range(5)]
+            # 12 tokens: two south rows + first and last columns
+            positions = []
+
+            # First and last column (x=0, x=4) and fifth row
+            for x in [0, 4]:
+                positions.append((x, 5))
+
+            # Bottom two rows (y=6,7)
+            for y in [6, 7]:
+                for x in range(5):
+                    positions.append((x, y))
+            return positions[:12]  # Take exactly 12 positions
+
+    def get_token_number(self, x: int, y: int) -> int:
+        """Get the token number for a piece at given position."""
+        try:
+            return self.positions.index((x, y)) + 1
+        except ValueError:
+            return 0  # Not found
 
     def __repr__(self):
-        return f"Player({self.side.value}, pos=({self.x}, {self.y}))"
+        return f"Player({self.side.value}, positions={self.positions})"
 
 
 class GameState:

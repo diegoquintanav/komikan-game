@@ -231,6 +231,15 @@ class GameRenderer:
                             TOKEN_RADIUS - 3,
                         )
 
+                        # Draw token number
+                        token_number = node.occupied_by.get_token_number(x, y)
+                        if token_number > 0:
+                            number_font = pygame.font.Font(None, 20)
+                            number_text = str(token_number)
+                            text_surface = number_font.render(number_text, True, (255, 255, 255))
+                            text_rect = text_surface.get_rect(center=screen_pos)
+                            self.screen.blit(text_surface, text_rect)
+
     def draw_coordinate_labels(self):
         """Draw coordinate labels for X and Y axes."""
         label_font = pygame.font.Font(None, 24)
@@ -305,11 +314,17 @@ class Game:
 
     def setup_initial_positions(self):
         """Place players at their starting positions."""
-        # Place north player at center of top row
-        self.board.place_player(self.game_state.player_north, 2, 0)
+        # Place north player tokens
+        north_positions = self.game_state.player_north.get_starting_positions()
+        for x, y in north_positions:
+            self.board.place_player(self.game_state.player_north, x, y)
+            self.game_state.player_north.positions.append((x, y))
 
-        # Place south player at center of bottom row
-        self.board.place_player(self.game_state.player_south, 2, 7)
+        # Place south player tokens (12 total)
+        south_positions = self.game_state.player_south.get_starting_positions()
+        for x, y in south_positions:
+            self.board.place_player(self.game_state.player_south, x, y)
+            self.game_state.player_south.positions.append((x, y))
 
     def handle_click(self, pos: tuple[int, int], button: int):
         """Handle mouse click events."""
@@ -330,6 +345,13 @@ class Game:
                         board_y,
                     )
                     if success:
+                        # Update player's positions list
+                        player = self.game_state.current_player
+                        old_pos = (self.selected_position[0], self.selected_position[1])
+                        if old_pos in player.positions:
+                            player.positions.remove(old_pos)
+                        player.positions.append((board_x, board_y))
+
                         self.selected_position = None
                         self.valid_moves = []
                         self.game_state.switch_turn()
@@ -364,15 +386,18 @@ class Game:
 
     def handle_keyboard(self, key):
         """Handle keyboard input for movement."""
-        # Auto-select current player's piece if nothing is selected
+        # Auto-select current player's first piece if nothing is selected
         if not self.selected_position:
             player = self.game_state.current_player
-            self.selected_position = (player.x, player.y)
-            self.valid_moves = [
-                (mx, my)
-                for mx, my in self.board.get_adjacent_positions(player.x, player.y)
-                if self.board.is_valid_move(player.x, player.y, mx, my)
-            ]
+            if player.positions:
+                # Select the first available piece
+                first_pos = player.positions[0]
+                self.selected_position = first_pos
+                self.valid_moves = [
+                    (mx, my)
+                    for mx, my in self.board.get_adjacent_positions(first_pos[0], first_pos[1])
+                    if self.board.is_valid_move(first_pos[0], first_pos[1], mx, my)
+                ]
             return
 
         # Define movement directions
@@ -406,6 +431,12 @@ class Game:
                     target_y,
                 )
                 if success:
+                    # Update player's positions list
+                    player = self.game_state.current_player
+                    if (current_x, current_y) in player.positions:
+                        player.positions.remove((current_x, current_y))
+                    player.positions.append((target_x, target_y))
+
                     self.selected_position = None
                     self.valid_moves = []
                     self.game_state.switch_turn()
