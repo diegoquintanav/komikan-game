@@ -2,6 +2,7 @@
 Game board for the Komikan board game.
 Manages the 5x8 node grid and validates player movements.
 """
+
 import pygame
 from typing import List, Tuple, Optional
 
@@ -12,7 +13,7 @@ class Node:
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.occupied_by: Optional['Player'] = None
+        self.occupied_by: Optional["Player"] = None
 
     def is_occupied(self) -> bool:
         return self.occupied_by is not None
@@ -26,6 +27,31 @@ class GameBoard:
 
     WIDTH = 5
     HEIGHT = 8
+    DISABLED_NODES = {(0, 2), (4, 2)}  # Nodes that cannot be moved to
+    DISABLED_PATHS = {
+        # Paths that cannot be traversed (bidirectional)
+        # force top north inverted triangle
+        ((1, 2), (1, 3)),
+        ((2, 2), (1, 3)),
+        ((1, 2), (0, 3)),
+        ((3, 2), (3, 3)),
+        ((2, 2), (3, 3)),
+        ((3, 2), (4, 3)),
+
+        # All paths connecting to disabled node (0, 2)
+        ((0, 2), (0, 1)),    # North
+        ((0, 2), (1, 1)),    # Northeast
+        ((0, 2), (1, 2)),    # East
+        ((0, 2), (1, 3)),    # Southeast
+        ((0, 2), (0, 3)),    # South
+
+        # All paths connecting to disabled node (4, 2)
+        ((4, 2), (4, 1)),    # North
+        ((4, 2), (3, 1)),    # Northwest
+        ((4, 2), (3, 2)),    # West
+        ((4, 2), (3, 3)),    # Southwest
+        ((4, 2), (4, 3)),    # South
+    }
 
     def __init__(self):
         # Create 5x8 grid of nodes
@@ -35,6 +61,16 @@ class GameBoard:
             for x in range(self.WIDTH):
                 row.append(Node(x, y))
             self.nodes.append(row)
+
+    def is_disabled_node(self, x: int, y: int) -> bool:
+        """Check if a node is disabled."""
+        return (x, y) in self.DISABLED_NODES
+
+    def is_disabled_path(self, from_x: int, from_y: int, to_x: int, to_y: int) -> bool:
+        """Check if a path between two nodes is disabled."""
+        path1 = ((from_x, from_y), (to_x, to_y))
+        path2 = ((to_x, to_y), (from_x, from_y))  # Reverse path
+        return path1 in self.DISABLED_PATHS or path2 in self.DISABLED_PATHS
 
     def get_node(self, x: int, y: int) -> Optional[Node]:
         """Get node at given coordinates, return None if out of bounds."""
@@ -51,8 +87,14 @@ class GameBoard:
         adjacent = []
         # All 8 directions: N, NE, E, SE, S, SW, W, NW
         directions = [
-            (0, -1), (1, -1), (1, 0), (1, 1),
-            (0, 1), (-1, 1), (-1, 0), (-1, -1)
+            (0, -1),
+            (1, -1),
+            (1, 0),
+            (1, 1),
+            (0, 1),
+            (-1, 1),
+            (-1, 0),
+            (-1, -1),
         ]
 
         for dx, dy in directions:
@@ -68,6 +110,14 @@ class GameBoard:
         if not self.is_valid_position(to_x, to_y):
             return False
 
+        # Check if target position is disabled
+        if self.is_disabled_node(to_x, to_y):
+            return False
+
+        # Check if the path is disabled
+        if self.is_disabled_path(from_x, from_y, to_x, to_y):
+            return False
+
         # Check if target position is adjacent to current position
         adjacent_positions = self.get_adjacent_positions(from_x, from_y)
         if (to_x, to_y) not in adjacent_positions:
@@ -77,7 +127,9 @@ class GameBoard:
         target_node = self.get_node(to_x, to_y)
         return target_node is not None and not target_node.is_occupied()
 
-    def move_player(self, player: 'Player', from_x: int, from_y: int, to_x: int, to_y: int) -> bool:
+    def move_player(
+        self, player: "Player", from_x: int, from_y: int, to_x: int, to_y: int
+    ) -> bool:
         """Move a player from one position to another. Returns True if successful."""
         if not self.is_valid_move(from_x, from_y, to_x, to_y):
             return False
@@ -97,7 +149,7 @@ class GameBoard:
 
         return False
 
-    def place_player(self, player: 'Player', x: int, y: int) -> bool:
+    def place_player(self, player: "Player", x: int, y: int) -> bool:
         """Place a player at initial position."""
         node = self.get_node(x, y)
         if node and not node.is_occupied():

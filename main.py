@@ -7,7 +7,10 @@ import pygame
 import sys
 from board import GameBoard
 from player import GameState, PlayerSide
+import os
 
+
+DEBUG_MODE = os.getenv("KOMIKAN_DEBUG", "0") == "1"
 
 # Constants
 WINDOW_WIDTH = 500
@@ -19,6 +22,13 @@ BACKGROUND_COLOR = (240, 240, 240)
 SELECTED_COLOR = (255, 255, 0)
 VALID_MOVE_COLOR = (100, 255, 100)
 ACTIVE_PLAYER_COLOR = (255, 215, 0)
+
+if DEBUG_MODE:
+    DISABLED_NODE_COLOR = (150, 150, 150)
+    DISABLED_PATH_COLOR = (90, 90, 90)
+else:
+    DISABLED_NODE_COLOR = BACKGROUND_COLOR
+    DISABLED_PATH_COLOR = BACKGROUND_COLOR
 
 
 class GameRenderer:
@@ -48,19 +58,73 @@ class GameRenderer:
         board_y = round((screen_y - BOARD_MARGIN) / self.node_spacing_y)
         return board_x, board_y
 
+    def draw_dashed_line(self, start_pos, end_pos, color, dash_length=8):
+        """Draw a dashed line between two points."""
+        x1, y1 = start_pos
+        x2, y2 = end_pos
+
+        # Calculate total distance and direction
+        dx = x2 - x1
+        dy = y2 - y1
+        distance = (dx**2 + dy**2) ** 0.5
+
+        if distance == 0:
+            return
+
+        # Normalize direction
+        dx_norm = dx / distance
+        dy_norm = dy / distance
+
+        # Draw dashes
+        current_distance = 0
+        while current_distance < distance:
+            # Start of dash
+            dash_start_x = x1 + dx_norm * current_distance
+            dash_start_y = y1 + dy_norm * current_distance
+
+            # End of dash
+            dash_end_distance = min(current_distance + dash_length, distance)
+            dash_end_x = x1 + dx_norm * dash_end_distance
+            dash_end_y = y1 + dy_norm * dash_end_distance
+
+            # Draw the dash
+            pygame.draw.line(
+                self.screen,
+                color,
+                (int(dash_start_x), int(dash_start_y)),
+                (int(dash_end_x), int(dash_end_y)),
+                2,
+            )
+
+            # Move to next dash (skip gap)
+            current_distance += dash_length * 2
+
     def draw_grid(self):
         """Draw the game board grid."""
+        # Create a temporary GameBoard instance to check disabled paths
+        board = GameBoard()
+
         # Draw horizontal lines
         for y in range(GameBoard.HEIGHT):
-            start_pos = self.get_node_screen_pos(0, y)
-            end_pos = self.get_node_screen_pos(GameBoard.WIDTH - 1, y)
-            pygame.draw.line(self.screen, GRID_COLOR, start_pos, end_pos, 2)
+            for x in range(GameBoard.WIDTH - 1):
+                start_pos = self.get_node_screen_pos(x, y)
+                end_pos = self.get_node_screen_pos(x + 1, y)
+
+                if board.is_disabled_path(x, y, x + 1, y):
+                    self.draw_dashed_line(start_pos, end_pos, DISABLED_PATH_COLOR)
+                else:
+                    pygame.draw.line(self.screen, GRID_COLOR, start_pos, end_pos, 2)
 
         # Draw vertical lines
         for x in range(GameBoard.WIDTH):
-            start_pos = self.get_node_screen_pos(x, 0)
-            end_pos = self.get_node_screen_pos(x, GameBoard.HEIGHT - 1)
-            pygame.draw.line(self.screen, GRID_COLOR, start_pos, end_pos, 2)
+            for y in range(GameBoard.HEIGHT - 1):
+                start_pos = self.get_node_screen_pos(x, y)
+                end_pos = self.get_node_screen_pos(x, y + 1)
+
+                if board.is_disabled_path(x, y, x, y + 1):
+                    self.draw_dashed_line(start_pos, end_pos, DISABLED_PATH_COLOR)
+                else:
+                    pygame.draw.line(self.screen, GRID_COLOR, start_pos, end_pos, 2)
 
         # Draw diagonal lines
         for y in range(GameBoard.HEIGHT):
@@ -70,16 +134,30 @@ class GameRenderer:
                 # Draw diagonal line to bottom-right neighbor
                 if x < GameBoard.WIDTH - 1 and y < GameBoard.HEIGHT - 1:
                     neighbor_pos = self.get_node_screen_pos(x + 1, y + 1)
-                    pygame.draw.line(
-                        self.screen, GRID_COLOR, current_pos, neighbor_pos, 1
-                    )
+                    if board.is_disabled_path(x, y, x + 1, y + 1):
+                        self.draw_dashed_line(
+                            current_pos, neighbor_pos, DISABLED_PATH_COLOR
+                        )
+                    else:
+                        pygame.draw.line(
+                            self.screen,
+                            GRID_COLOR,
+                            current_pos,
+                            neighbor_pos,
+                            2,
+                        )
 
                 # Draw diagonal line to bottom-left neighbor
                 if x > 0 and y < GameBoard.HEIGHT - 1:
                     neighbor_pos = self.get_node_screen_pos(x - 1, y + 1)
-                    pygame.draw.line(
-                        self.screen, GRID_COLOR, current_pos, neighbor_pos, 1
-                    )
+                    if board.is_disabled_path(x, y, x - 1, y + 1):
+                        self.draw_dashed_line(
+                            current_pos, neighbor_pos, DISABLED_PATH_COLOR
+                        )
+                    else:
+                        pygame.draw.line(
+                            self.screen, GRID_COLOR, current_pos, neighbor_pos, 1
+                        )
 
     def draw_nodes(
         self,
@@ -101,8 +179,30 @@ class GameRenderer:
                     and node.occupied_by == game_state.current_player
                 )
 
+                # Check if this node is disabled
+                is_disabled = board.is_disabled_node(x, y)
+
                 # Draw node circle highlights
-                if selected_pos == (x, y):
+                if is_disabled:
+                    # Draw disabled node with X mark
+                    pygame.draw.circle(
+                        self.screen, DISABLED_NODE_COLOR, screen_pos, NODE_RADIUS, 0
+                    )
+                    pygame.draw.line(
+                        self.screen,
+                        BACKGROUND_COLOR,
+                        (screen_pos[0] - 10, screen_pos[1] - 10),
+                        (screen_pos[0] + 10, screen_pos[1] + 10),
+                        3,
+                    )
+                    pygame.draw.line(
+                        self.screen,
+                        BACKGROUND_COLOR,
+                        (screen_pos[0] - 10, screen_pos[1] + 10),
+                        (screen_pos[0] + 10, screen_pos[1] - 10),
+                        3,
+                    )
+                elif selected_pos == (x, y):
                     pygame.draw.circle(
                         self.screen, SELECTED_COLOR, screen_pos, NODE_RADIUS + 5
                     )
@@ -116,13 +216,44 @@ class GameRenderer:
                         self.screen, ACTIVE_PLAYER_COLOR, screen_pos, NODE_RADIUS + 4, 3
                     )
 
-                pygame.draw.circle(self.screen, GRID_COLOR, screen_pos, NODE_RADIUS, 3)
-
-                # Draw player if present
-                if node and node.is_occupied():
+                if not is_disabled:
                     pygame.draw.circle(
-                        self.screen, node.occupied_by.color, screen_pos, NODE_RADIUS - 3
+                        self.screen, GRID_COLOR, screen_pos, NODE_RADIUS, 3
                     )
+
+                    # Draw player if present
+                    if node and node.is_occupied():
+                        pygame.draw.circle(
+                            self.screen,
+                            node.occupied_by.color,
+                            screen_pos,
+                            NODE_RADIUS - 3,
+                        )
+
+    def draw_coordinate_labels(self):
+        """Draw coordinate labels for X and Y axes."""
+        label_font = pygame.font.Font(None, 24)
+        label_color = (80, 80, 80)
+
+        # Draw X axis labels (0-4) at the top
+        for x in range(GameBoard.WIDTH):
+            screen_pos = self.get_node_screen_pos(x, 0)
+            label_text = str(x)
+            text_surface = label_font.render(label_text, True, label_color)
+            text_rect = text_surface.get_rect()
+            text_rect.centerx = screen_pos[0]
+            text_rect.bottom = screen_pos[1] - 30
+            self.screen.blit(text_surface, text_rect)
+
+        # Draw Y axis labels (0-7) on the left
+        for y in range(GameBoard.HEIGHT):
+            screen_pos = self.get_node_screen_pos(0, y)
+            label_text = str(y)
+            text_surface = label_font.render(label_text, True, label_color)
+            text_rect = text_surface.get_rect()
+            text_rect.right = screen_pos[0] - 30
+            text_rect.centery = screen_pos[1]
+            self.screen.blit(text_surface, text_rect)
 
     def draw_ui(self, game_state: GameState):
         """Draw game UI elements."""
@@ -295,6 +426,7 @@ class Game:
             # Render
             self.screen.fill(BACKGROUND_COLOR)
             self.renderer.draw_grid()
+            self.renderer.draw_coordinate_labels()
             self.renderer.draw_nodes(
                 self.board, self.game_state, self.selected_position, self.valid_moves
             )
