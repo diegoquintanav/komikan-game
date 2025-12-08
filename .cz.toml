@@ -5,3 +5,6 @@ version_scheme = "pep440"
 version_provider = "uv"
 update_changelog_on_bump = true
 major_version_zero = true
+changelog_file = "CHANGELOG.md"
+changelog_format = "%(message)s"
+changelog_pattern = "^(feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\\(.+\\))?(!)?:"

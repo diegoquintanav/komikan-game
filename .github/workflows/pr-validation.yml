@@ -1,0 +1,119 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  validate-commits:
+    name: Validate Conventional Commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Validate commit messages
+        run: |
+          # Get base branch (main or master)
+          git fetch origin main:main 2>/dev/null || git fetch origin master:master 2>/dev/null || true
+          BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' 2>/dev/null || echo "main")
+
+          echo "Validating commits against base branch: $BASE_BRANCH"
+
+          # Run commitizen check on the range of commits in this PR
+          uv run cz check --rev-range origin/${BASE_BRANCH}..HEAD
+
+  validate-changelog:
+    name: Validate Changelog Status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Check changelog consistency
+        run: |
+          # Get base branch
+          git fetch origin main:main 2>/dev/null || git fetch origin master:master 2>/dev/null || true
+          BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' 2>/dev/null || echo "main")
+
+          # Get commits in this PR
+          COMMITS=$(git rev-list origin/${BASE_BRANCH}..HEAD --oneline)
+
+          echo "Commits in this PR:"
+          echo "$COMMITS"
+
+          # Check if there are conventional commits that should generate changelog entries
+          SIGNIFICANT_COMMITS=$(echo "$COMMITS" | grep -E "^[a-f0-9]+ (feat|fix)(\(.+\))?\!?:" || true)
+
+          if [ -n "$SIGNIFICANT_COMMITS" ]; then
+            echo "Found significant commits (feat/fix) that should be in changelog:"
+            echo "$SIGNIFICANT_COMMITS"
+
+            # Check if CHANGELOG.md was modified in this PR
+            CHANGELOG_MODIFIED=$(git diff --name-only origin/${BASE_BRANCH}..HEAD | grep "CHANGELOG.md" || true)
+
+            if [ -z "$CHANGELOG_MODIFIED" ]; then
+              echo "❌ ERROR: This PR contains significant changes (feat/fix) but CHANGELOG.md was not updated."
+              echo "Please run the changelog update workflow or manually update the changelog."
+              exit 1
+            else
+              echo "✅ CHANGELOG.md was updated in this PR."
+            fi
+          else
+            echo "ℹ️ No significant commits requiring changelog update found."
+          fi
+
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Run tests
+        run: |
+          uv run pytest tests/ -v --tb=short
+
+      - name: Check test coverage (if available)
+        run: |
+          # Run tests with coverage if pytest-cov is available
+          if uv run python -c "import pytest_cov" 2>/dev/null; then
+            uv run pytest tests/ --cov=src/komikan --cov-report=term-missing
+          else
+            echo "pytest-cov not available, skipping coverage check"
+          fi
+        continue-on-error: true

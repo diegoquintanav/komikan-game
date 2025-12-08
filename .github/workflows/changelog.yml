@@ -1,0 +1,185 @@
+name: Update Changelog
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+jobs:
+  changelog-check:
+    name: Check if changelog needs update
+    runs-on: ubuntu-latest
+    outputs:
+      needs-update: ${{ steps.check.outputs.needs-update }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Check if changelog update is needed
+        id: check
+        run: |
+          # Get the list of commits since last tag or base branch
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            LAST_TAG=$(git describe --tags --abbrev=0)
+            COMMITS=$(git rev-list ${LAST_TAG}..HEAD --oneline)
+          else
+            # If no tags exist, check commits in this PR
+            git fetch origin main:main || git fetch origin master:master || true
+            BASE_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@' || echo "main")
+            COMMITS=$(git rev-list origin/${BASE_BRANCH}..HEAD --oneline || git log --oneline -10)
+          fi
+
+          echo "Recent commits:"
+          echo "$COMMITS"
+
+          # Check if there are any conventional commits that would generate changelog entries
+          if echo "$COMMITS" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\(.+\))?\!?:" >/dev/null; then
+            echo "needs-update=true" >> $GITHUB_OUTPUT
+            echo "✅ Conventional commits found - changelog update needed"
+          else
+            echo "needs-update=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No conventional commits found - no changelog update needed"
+          fi
+
+  update-changelog:
+    name: Update Changelog
+    runs-on: ubuntu-latest
+    needs: changelog-check
+    if: needs.changelog-check.outputs.needs-update == 'true'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Generate changelog (dry run)
+        id: changelog-preview
+        run: |
+          # Generate changelog without bumping version to preview changes
+          echo "## Changelog Preview" > changelog_preview.md
+          echo "" >> changelog_preview.md
+          uv run cz changelog --dry-run --incremental >> changelog_preview.md || true
+
+      - name: Check if CHANGELOG.md exists
+        id: changelog-exists
+        run: |
+          if [ -f "CHANGELOG.md" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate initial changelog if not exists
+        if: steps.changelog-exists.outputs.exists == 'false'
+        run: |
+          uv run cz changelog --start-rev HEAD
+
+      - name: Update existing changelog
+        if: steps.changelog-exists.outputs.exists == 'true'
+        run: |
+          uv run cz changelog --incremental
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          if git diff --quiet CHANGELOG.md; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changelog changes detected"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changelog changes detected"
+            git diff CHANGELOG.md
+          fi
+
+      - name: Commit changelog changes
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git add CHANGELOG.md
+          git commit -m "docs: update CHANGELOG.md
+
+          Auto-generated changelog update based on conventional commits.
+
+          [skip ci]"
+
+      - name: Push changes
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git push origin HEAD
+
+      - name: Comment on PR with changelog preview
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            let body = '## 📋 Changelog Update\n\n';
+
+            if (fs.existsSync('changelog_preview.md')) {
+              const preview = fs.readFileSync('changelog_preview.md', 'utf8');
+              body += preview;
+            } else {
+              body += 'Changelog will be updated based on conventional commits in this PR.\n';
+            }
+
+            body += '\n\n> This changelog is automatically generated from conventional commit messages.';
+
+            // Find existing changelog comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const existingComment = comments.data.find(comment =>
+              comment.user.login === 'github-actions[bot]' &&
+              comment.body.includes('📋 Changelog Update')
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }

@@ -1,0 +1,140 @@
+name: Release and Version Bump
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'Version bump type'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Configure git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Check if release is needed
+        id: check-release
+        run: |
+          # Get commits since last tag
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            LAST_TAG=$(git describe --tags --abbrev=0)
+            COMMITS=$(git rev-list ${LAST_TAG}..HEAD --oneline)
+          else
+            # No previous tags, check recent commits
+            COMMITS=$(git log --oneline -10)
+          fi
+
+          echo "Commits since last release:"
+          echo "$COMMITS"
+
+          # Check for conventional commits that warrant a release
+          if echo "$COMMITS" | grep -E "^[a-f0-9]+ (feat|fix|docs|style|refactor|perf|test|chore|build|ci)(\(.+\))?\!?:" >/dev/null; then
+            echo "release-needed=true" >> $GITHUB_OUTPUT
+            echo "✅ Conventional commits found - release needed"
+          else
+            echo "release-needed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️ No significant changes - no release needed"
+          fi
+
+      - name: Dry run version bump to check what would happen
+        if: steps.check-release.outputs.release-needed == 'true'
+        id: dry-run
+        run: |
+          if [ "${{ github.event.inputs.bump_type }}" = "auto" ] || [ -z "${{ github.event.inputs.bump_type }}" ]; then
+            NEW_VERSION=$(uv run cz bump --dry-run 2>&1 | grep -o "tag to create: [0-9]\+\.[0-9]\+\.[0-9]\+" | sed 's/tag to create: //' || echo "")
+          else
+            NEW_VERSION=$(uv run cz bump --dry-run --increment ${{ github.event.inputs.bump_type }} 2>&1 | grep -o "tag to create: [0-9]\+\.[0-9]\+\.[0-9]\+" | sed 's/tag to create: //' || echo "")
+          fi
+
+          if [ -n "$NEW_VERSION" ]; then
+            echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "Version would be bumped to: $NEW_VERSION"
+          else
+            echo "No version bump needed"
+            echo "new-version=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump version and update changelog
+        if: steps.check-release.outputs.release-needed == 'true' && steps.dry-run.outputs.new-version != ''
+        id: bump
+        run: |
+          if [ "${{ github.event.inputs.bump_type }}" = "auto" ] || [ -z "${{ github.event.inputs.bump_type }}" ]; then
+            uv run cz bump --yes
+          else
+            uv run cz bump --increment ${{ github.event.inputs.bump_type }} --yes
+          fi
+
+          # Get the new version
+          NEW_TAG=$(git describe --tags --abbrev=0)
+          echo "new-tag=$NEW_TAG" >> $GITHUB_OUTPUT
+
+      - name: Push changes and tags
+        if: steps.check-release.outputs.release-needed == 'true' && steps.dry-run.outputs.new-version != ''
+        run: |
+          git push origin main
+          git push origin --tags
+
+      - name: Extract release notes from changelog
+        if: steps.check-release.outputs.release-needed == 'true' && steps.dry-run.outputs.new-version != ''
+        id: extract-notes
+        run: |
+          # Extract the latest version section from CHANGELOG.md
+          if [ -f "CHANGELOG.md" ]; then
+            # Get content between the first and second ## headers
+            RELEASE_NOTES=$(awk '/^## / { if (count == 0) { start = 1; count++ } else if (count == 1) { exit } } start && !/^## / { print }' CHANGELOG.md | head -n -1)
+
+            # Save to file for GitHub release
+            echo "$RELEASE_NOTES" > release_notes.md
+
+            # Output for use in next step
+            echo "has-notes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-notes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        if: steps.check-release.outputs.release-needed == 'true' && steps.dry-run.outputs.new-version != ''
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ steps.bump.outputs.new-tag }}
+          release_name: Release ${{ steps.bump.outputs.new-tag }}
+          body_path: ${{ steps.extract-notes.outputs.has-notes == 'true' && 'release_notes.md' || '' }}
+          body: ${{ steps.extract-notes.outputs.has-notes == 'false' && 'Automated release based on conventional commits.' || '' }}
+          draft: false
+          prerelease: false
