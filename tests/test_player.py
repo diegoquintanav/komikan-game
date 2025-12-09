@@ -54,8 +54,9 @@ class TestPlayer:
 
     def test_get_token_number(self, south_player):
         """Test token number calculation."""
-        # Set up some positions
+        # Set up some positions and their token numbers
         south_player.positions = [(0, 6), (1, 6), (2, 6)]
+        south_player.position_to_number = {(0, 6): 1, (1, 6): 2, (2, 6): 3}
 
         assert south_player.get_token_number(0, 6) == 1
         assert south_player.get_token_number(1, 6) == 2

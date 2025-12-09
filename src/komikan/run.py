@@ -649,9 +649,12 @@ class Game:
                         # Update player's positions list
                         player = self.game_state.current_player
                         old_pos = (self.selected_position[0], self.selected_position[1])
+                        new_pos = (board_x, board_y)
                         if old_pos in player.positions:
                             player.positions.remove(old_pos)
-                        player.positions.append((board_x, board_y))
+                        player.positions.append(new_pos)
+                        # Update token number mapping
+                        player.move_token(old_pos, new_pos)
 
                         self.selected_position = None
                         self.valid_moves = []
@@ -781,11 +784,17 @@ class Game:
                         captured_pos = (current_x + dx // 2, current_y + dy // 2)
                         if captured_pos in captured_player.positions:
                             captured_player.positions.remove(captured_pos)
+                        # Remove token number mapping for captured piece
+                        captured_player.remove_token(captured_pos)
 
                         # Update attacker's position
-                        if (current_x, current_y) in player.positions:
-                            player.positions.remove((current_x, current_y))
-                        player.positions.append((target_x, target_y))
+                        old_pos = (current_x, current_y)
+                        new_pos = (target_x, target_y)
+                        if old_pos in player.positions:
+                            player.positions.remove(old_pos)
+                        player.positions.append(new_pos)
+                        # Update token number mapping
+                        player.move_token(old_pos, new_pos)
 
                         self.selected_position = None
                         self.valid_moves = []
@@ -800,9 +809,13 @@ class Game:
                     )
                     if success:
                         # Update player's positions list
-                        if (current_x, current_y) in player.positions:
-                            player.positions.remove((current_x, current_y))
-                        player.positions.append((target_x, target_y))
+                        old_pos = (current_x, current_y)
+                        new_pos = (target_x, target_y)
+                        if old_pos in player.positions:
+                            player.positions.remove(old_pos)
+                        player.positions.append(new_pos)
+                        # Update token number mapping
+                        player.move_token(old_pos, new_pos)
 
                         self.selected_position = None
                         self.valid_moves = []
