@@ -638,30 +638,63 @@ class Game:
             if self.selected_position:
                 # Try to move to clicked position
                 if (board_x, board_y) in self.valid_moves:
-                    success = self.make_move_with_logging(
-                        self.game_state.current_player,
-                        self.selected_position[0],
-                        self.selected_position[1],
-                        board_x,
-                        board_y,
-                    )
-                    if success:
-                        # Update player's positions list
-                        player = self.game_state.current_player
-                        old_pos = (self.selected_position[0], self.selected_position[1])
-                        new_pos = (board_x, board_y)
-                        if old_pos in player.positions:
-                            player.positions.remove(old_pos)
-                        player.positions.append(new_pos)
-                        # Update token number mapping
-                        player.move_token(old_pos, new_pos)
+                    player = self.game_state.current_player
+                    current_x, current_y = self.selected_position
 
-                        self.selected_position = None
-                        self.valid_moves = []
-                        self.game_state.switch_turn()
+                    # Check if this is a capture move first (for North player)
+                    if player.side.value == "pangui" and self.board.is_valid_capture(
+                        current_x, current_y, board_x, board_y, player
+                    ):
+                        # Execute capture move
+                        success, captured_player = self.make_capture_with_logging(
+                            player, current_x, current_y, board_x, board_y
+                        )
+                        if success and captured_player:
+                            # Remove captured piece from captured player's positions
+                            dx = board_x - current_x
+                            dy = board_y - current_y
+                            captured_pos = (current_x + dx // 2, current_y + dy // 2)
+                            if captured_pos in captured_player.positions:
+                                captured_player.positions.remove(captured_pos)
+                            # Remove token number mapping for captured piece
+                            captured_player.remove_token(captured_pos)
 
-                        # Check for win condition
-                        self.check_win_condition()
+                            # Update attacker's position
+                            old_pos = (current_x, current_y)
+                            new_pos = (board_x, board_y)
+                            if old_pos in player.positions:
+                                player.positions.remove(old_pos)
+                            player.positions.append(new_pos)
+                            # Update token number mapping
+                            player.move_token(old_pos, new_pos)
+
+                            self.selected_position = None
+                            self.valid_moves = []
+                            self.game_state.switch_turn()
+
+                            # Check for win condition
+                            self.check_win_condition()
+                    else:
+                        # Regular move
+                        success = self.make_move_with_logging(
+                            player, current_x, current_y, board_x, board_y
+                        )
+                        if success:
+                            # Update player's positions list
+                            old_pos = (current_x, current_y)
+                            new_pos = (board_x, board_y)
+                            if old_pos in player.positions:
+                                player.positions.remove(old_pos)
+                            player.positions.append(new_pos)
+                            # Update token number mapping
+                            player.move_token(old_pos, new_pos)
+
+                            self.selected_position = None
+                            self.valid_moves = []
+                            self.game_state.switch_turn()
+
+                            # Check for win condition
+                            self.check_win_condition()
                 else:
                     # Select new piece
                     self.try_select_piece(board_x, board_y)
@@ -765,23 +798,29 @@ class Game:
             dx, dy = move_map[key]
             current_x, current_y = self.selected_position
             target_x, target_y = current_x + dx, current_y + dy
+            player = self.game_state.current_player
 
-            # Check if move is valid and in valid_moves list
-            if (target_x, target_y) in self.valid_moves:
-                player = self.game_state.current_player
-
-                # Try capture move first (for north player)
-                if player.side.value == "pangui" and self.board.is_valid_capture(
-                    current_x, current_y, target_x, target_y, player
+            # For North player, check capture moves first (2-step jump)
+            if player.side.value == "pangui":
+                capture_x, capture_y = current_x + dx * 2, current_y + dy * 2
+                if (
+                    capture_x,
+                    capture_y,
+                ) in self.valid_moves and self.board.is_valid_capture(
+                    current_x, current_y, capture_x, capture_y, player
                 ):
+                    # Execute capture move
                     success, captured_player = self.make_capture_with_logging(
-                        player, current_x, current_y, target_x, target_y
+                        player, current_x, current_y, capture_x, capture_y
                     )
                     if success and captured_player:
                         # Remove captured piece from captured player's positions
-                        dx = target_x - current_x
-                        dy = target_y - current_y
-                        captured_pos = (current_x + dx // 2, current_y + dy // 2)
+                        capture_dx = capture_x - current_x
+                        capture_dy = capture_y - current_y
+                        captured_pos = (
+                            current_x + capture_dx // 2,
+                            current_y + capture_dy // 2,
+                        )
                         if captured_pos in captured_player.positions:
                             captured_player.positions.remove(captured_pos)
                         # Remove token number mapping for captured piece
@@ -789,7 +828,7 @@ class Game:
 
                         # Update attacker's position
                         old_pos = (current_x, current_y)
-                        new_pos = (target_x, target_y)
+                        new_pos = (capture_x, capture_y)
                         if old_pos in player.positions:
                             player.positions.remove(old_pos)
                         player.positions.append(new_pos)
@@ -802,27 +841,30 @@ class Game:
 
                         # Check for win condition
                         self.check_win_condition()
-                else:
-                    # Regular move
-                    success = self.make_move_with_logging(
-                        player, current_x, current_y, target_x, target_y
-                    )
-                    if success:
-                        # Update player's positions list
-                        old_pos = (current_x, current_y)
-                        new_pos = (target_x, target_y)
-                        if old_pos in player.positions:
-                            player.positions.remove(old_pos)
-                        player.positions.append(new_pos)
-                        # Update token number mapping
-                        player.move_token(old_pos, new_pos)
+                        return
 
-                        self.selected_position = None
-                        self.valid_moves = []
-                        self.game_state.switch_turn()
+            # Check if regular move is valid and in valid_moves list
+            if (target_x, target_y) in self.valid_moves:
+                # Regular move
+                success = self.make_move_with_logging(
+                    player, current_x, current_y, target_x, target_y
+                )
+                if success:
+                    # Update player's positions list
+                    old_pos = (current_x, current_y)
+                    new_pos = (target_x, target_y)
+                    if old_pos in player.positions:
+                        player.positions.remove(old_pos)
+                    player.positions.append(new_pos)
+                    # Update token number mapping
+                    player.move_token(old_pos, new_pos)
 
-                        # Check for win condition
-                        self.check_win_condition()
+                    self.selected_position = None
+                    self.valid_moves = []
+                    self.game_state.switch_turn()
+
+                    # Check for win condition
+                    self.check_win_condition()
         elif key == pygame.K_ESCAPE:
             current_time = pygame.time.get_ticks()
 

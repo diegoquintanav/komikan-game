@@ -20,7 +20,7 @@ class EndgameDemoGame(Game):
         self.game_state.player_south.position_to_number.clear()
 
         # Set up North player - positioned to capture a South token
-        north_pos = (2, 4)  # Central position
+        north_pos = (2, 2)  # Position where North can make a valid capture
         self.game_state.player_north.positions = [north_pos]
         self.game_state.player_north.position_to_number[north_pos] = 1
         self.board.place_player(
@@ -29,7 +29,7 @@ class EndgameDemoGame(Game):
 
         # Set up South player - only 4 tokens remaining (one capture away from North winning)
         south_positions = [
-            (1, 5),  # Can be captured by North from (2, 4) -> jump to (0, 6)
+            (2, 3),  # Can be captured by North from (2, 2) -> jump to (2, 4)
             (3, 6),  # Safe position
             (0, 7),  # Safe position
             (4, 7),  # Safe position
@@ -47,13 +47,13 @@ class EndgameDemoGame(Game):
         print(f"South positions: {south_positions}")
         print("South has 4 tokens - North needs to capture 1 to win!")
         print("\nInstructions:")
-        print("- North can capture the South token at (1,5) by moving to (0,6)")
-        print("- Use mouse click or keyboard (A key) to move North left and capture")
+        print("- North can capture the South token at (2,3) by moving to (2,4)")
+        print("- Use mouse click or keyboard (S key) to move North down and capture")
         print("- This will reduce South to 3 tokens and trigger North's win!")
         print("- After game ends, press any key to restart")
         print("\nControls:")
-        print("- Click to select North token, then click (0,6) to capture")
-        print("- Or press A key to move left and capture")
+        print("- Click to select North token, then click (2,4) to capture")
+        print("- Or press S key to move down and capture")
         print("- ESC twice to exit")
         print("=" * 50)
 
