@@ -23,8 +23,8 @@ class Player:
     def get_starting_positions(self) -> list[Tuple[int, int]]:
         """Get valid starting positions for this player."""
         if self.side == PlayerSide.NORTH:
-            # Top row (y=0) - single token
-            return [(2, 0)]
+            # Top row (y=1), centered - single token
+            return [(2, 1)]
         else:  # PlayerSide.SOUTH
             # 12 tokens: two south rows + first and last columns
             positions = []

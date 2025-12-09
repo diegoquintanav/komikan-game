@@ -29,7 +29,7 @@ class TestPlayer:
     def test_north_starting_positions(self, north_player):
         """Test north player starting positions."""
         positions = north_player.get_starting_positions()
-        assert positions == [(2, 0)]
+        assert positions == [(2, 1)]
 
     def test_south_starting_positions(self, south_player):
         """Test south player starting positions."""
