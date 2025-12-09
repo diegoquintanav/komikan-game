@@ -384,12 +384,57 @@ class GameRenderer:
 
     def draw_ui(self, game_state: GameState):
         """Draw game UI elements."""
-        # Current player indicator
-        player_text = f"Current Player: {game_state.current_player.side.value.title()}"
-        text_surface = self.font.render(
-            player_text, True, game_state.current_player.color
-        )
-        self.screen.blit(text_surface, (10, 10))
+        # Game over display
+        if game_state.game_over:
+            # Draw semi-transparent overlay
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.set_alpha(128)
+            overlay.fill((0, 0, 0))
+            self.screen.blit(overlay, (0, 0))
+
+            # Get winner message
+            winner_message = game_state.winner_message
+
+            # Draw game over text
+            game_over_font = pygame.font.Font(None, 72)
+            winner_font = pygame.font.Font(None, 48)
+
+            game_over_text = game_over_font.render("GAME OVER!", True, (255, 255, 255))
+            winner_text = winner_font.render(winner_message, True, (255, 255, 0))
+            exit_text = self.font.render("Press ESC to exit", True, (200, 200, 200))
+
+            # Center the text
+            game_over_rect = game_over_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)
+            )
+            winner_rect = winner_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
+            )
+            exit_rect = exit_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 60)
+            )
+
+            self.screen.blit(game_over_text, game_over_rect)
+            self.screen.blit(winner_text, winner_rect)
+            self.screen.blit(exit_text, exit_rect)
+        else:
+            # Current player indicator
+            player_text = (
+                f"Current Player: {game_state.current_player.side.value.title()}"
+            )
+            text_surface = self.font.render(
+                player_text, True, game_state.current_player.color
+            )
+            self.screen.blit(text_surface, (10, 10))
+
+            # Token count display
+            north_count = len(game_state.player_north.positions)
+            south_count = len(game_state.player_south.positions)
+            count_text = f"Tokens - North: {north_count} | South: {south_count}"
+            count_surface = pygame.font.Font(None, 28).render(
+                count_text, True, (100, 100, 100)
+            )
+            self.screen.blit(count_surface, (10, 40))
 
         # Instructions
         instructions = [
@@ -533,8 +578,36 @@ class Game:
 
         return success, captured_player
 
+    def check_win_condition(self):
+        """Check for win conditions and handle game end."""
+        is_game_over, winner_message = self.game_state.check_win_condition(self.board)
+
+        if is_game_over and not self.game_state.game_over:
+            self.game_state.game_over = True
+            self.game_state.winner_message = winner_message
+
+            # Log the game end
+            if DEBUG_MODE:
+                logger.info("=== GAME ENDED ===")
+                logger.info(f"Winner: {winner_message}")
+                logger.info(
+                    f"Final positions - North: {len(self.game_state.player_north.positions)}, South: {len(self.game_state.player_south.positions)}"
+                )
+
+            # Print to console for immediate feedback
+            print("\\n🎉 GAME OVER! 🎉")
+            print(f"{winner_message}")
+            print(
+                f"Final token count - North: {len(self.game_state.player_north.positions)}, South: {len(self.game_state.player_south.positions)}"
+            )
+            print("Press ESC to exit or close the window.")
+
     def handle_click(self, pos: tuple[int, int], button: int):
         """Handle mouse click events."""
+        # Ignore clicks if game is over
+        if self.game_state.game_over:
+            return
+
         board_x, board_y = self.renderer.get_board_pos_from_screen(pos[0], pos[1])
 
         if not self.board.is_valid_position(board_x, board_y):
@@ -562,6 +635,9 @@ class Game:
                         self.selected_position = None
                         self.valid_moves = []
                         self.game_state.switch_turn()
+
+                        # Check for win condition
+                        self.check_win_condition()
                 else:
                     # Select new piece
                     self.try_select_piece(board_x, board_y)
@@ -620,10 +696,19 @@ class Game:
 
     def handle_keyboard(self, key):
         """Handle keyboard input for movement."""
+        # Ignore keyboard input if game is over (except ESC)
+        if self.game_state.game_over and key != pygame.K_ESCAPE:
+            return
+
         # Auto-select current player's first piece if nothing is selected
         if not self.selected_position:
             player = self.game_state.current_player
             if player.positions:
+                # Check if current player has any valid moves before auto-selecting
+                if not self.game_state._has_valid_moves(player, self.board):
+                    self.check_win_condition()
+                    return
+
                 # Select the first available piece
                 first_pos = player.positions[0]
                 self.selected_position = first_pos
@@ -678,6 +763,9 @@ class Game:
                         self.selected_position = None
                         self.valid_moves = []
                         self.game_state.switch_turn()
+
+                        # Check for win condition
+                        self.check_win_condition()
                 else:
                     # Regular move
                     success = self.make_move_with_logging(
@@ -691,7 +779,10 @@ class Game:
 
                         self.selected_position = None
                         self.valid_moves = []
-                        self.game_state.switch_turn()  # Escape to deselect or exit
+                        self.game_state.switch_turn()
+
+                        # Check for win condition
+                        self.check_win_condition()
         elif key == pygame.K_ESCAPE:
             current_time = pygame.time.get_ticks()
 

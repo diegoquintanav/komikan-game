@@ -62,6 +62,7 @@ class GameState:
         self.current_player = self.player_north
         self.selected_player = None
         self.game_over = False
+        self.winner_message = ""
 
     def switch_turn(self):
         """Switch to the other player's turn."""
@@ -76,3 +77,53 @@ class GameState:
             return self.player_south
         else:
             return self.player_north
+
+    def check_win_condition(self, board=None) -> Tuple[bool, str]:
+        """
+        Check if the game has ended and return (is_game_over, winner_message).
+
+        Win conditions:
+        - North wins if South has 3 or fewer tokens remaining
+        - South wins if North has no valid movements
+        """
+        # Check if South has 3 or fewer tokens (North wins)
+        if len(self.player_south.positions) <= 3:
+            return (
+                True,
+                f"{self.player_north.side.value.upper()} wins! South has only {len(self.player_south.positions)} tokens left.",
+            )
+
+        # Check if North has no valid movements (South wins)
+        # Only check this if we have a board reference
+        if board is not None and not self._has_valid_moves(self.player_north, board):
+            return (
+                True,
+                f"{self.player_south.side.value.upper()} wins! North player has no valid moves.",
+            )
+
+        # If game is already over, return a generic message
+        if self.game_over:
+            return True, "Game Over!"
+
+        return False, ""
+
+    def _has_valid_moves(self, player, board) -> bool:
+        """Check if a player has any valid moves (regular moves or captures)."""
+        for pos_x, pos_y in player.positions:
+            # Check for regular moves
+            adjacent_positions = board.get_adjacent_positions(pos_x, pos_y)
+            for adj_x, adj_y in adjacent_positions:
+                if board.is_valid_move(pos_x, pos_y, adj_x, adj_y):
+                    return True
+
+            # Check for capture moves (only for North player)
+            if player.side == PlayerSide.NORTH:
+                # Check all positions within 2-step capture distance
+                for target_x in range(board.WIDTH):
+                    for target_y in range(board.HEIGHT):
+                        if board.is_valid_capture(
+                            pos_x, pos_y, target_x, target_y, player
+                        ):
+                            return True
+
+        return False
