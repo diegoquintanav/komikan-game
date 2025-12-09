@@ -401,7 +401,9 @@ class GameRenderer:
 
             game_over_text = game_over_font.render("GAME OVER!", True, (255, 255, 255))
             winner_text = winner_font.render(winner_message, True, (255, 255, 0))
-            exit_text = self.font.render("Press ESC to exit", True, (200, 200, 200))
+            restart_text = self.font.render(
+                "Press any key to restart", True, (200, 200, 200)
+            )
 
             # Center the text
             game_over_rect = game_over_text.get_rect(
@@ -410,13 +412,13 @@ class GameRenderer:
             winner_rect = winner_text.get_rect(
                 center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
             )
-            exit_rect = exit_text.get_rect(
+            restart_rect = restart_text.get_rect(
                 center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 60)
             )
 
             self.screen.blit(game_over_text, game_over_rect)
             self.screen.blit(winner_text, winner_rect)
-            self.screen.blit(exit_text, exit_rect)
+            self.screen.blit(restart_text, restart_rect)
         else:
             # Current player indicator
             player_text = (
@@ -473,6 +475,24 @@ class Game:
         self.esc_timeout = 2000  # 2 seconds in milliseconds
 
         # Initialize player positions
+        self.setup_initial_positions()
+
+    def restart_game(self):
+        """Restart the game to initial state."""
+        # Reset game state
+        self.game_state.restart_game()
+
+        # Clear board
+        self.board = GameBoard()
+
+        # Reset UI state
+        self.selected_position = None
+        self.valid_moves = []
+
+        # Reset ESC tracking
+        self.esc_pressed_time = None
+
+        # Setup initial positions again
         self.setup_initial_positions()
 
     def setup_initial_positions(self):
@@ -604,8 +624,9 @@ class Game:
 
     def handle_click(self, pos: tuple[int, int], button: int):
         """Handle mouse click events."""
-        # Ignore clicks if game is over
+        # Restart game if game is over
         if self.game_state.game_over:
+            self.restart_game()
             return
 
         board_x, board_y = self.renderer.get_board_pos_from_screen(pos[0], pos[1])
@@ -696,8 +717,14 @@ class Game:
 
     def handle_keyboard(self, key):
         """Handle keyboard input for movement."""
-        # Ignore keyboard input if game is over (except ESC)
-        if self.game_state.game_over and key != pygame.K_ESCAPE:
+        # Restart game on any key press if game is over (except ESC for exit)
+        if self.game_state.game_over:
+            if key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+            else:
+                self.restart_game()
+                return
             return
 
         # Auto-select current player's first piece if nothing is selected

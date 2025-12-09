@@ -78,6 +78,18 @@ class GameState:
         else:
             return self.player_north
 
+    def restart_game(self):
+        """Reset the game to initial state."""
+        # Reset player positions
+        self.player_north.positions = []
+        self.player_south.positions = []
+
+        # Reset game state
+        self.current_player = self.player_north
+        self.selected_player = None
+        self.game_over = False
+        self.winner_message = ""
+
     def check_win_condition(self, board=None) -> Tuple[bool, str]:
         """
         Check if the game has ended and return (is_game_over, winner_message).
