@@ -135,4 +135,4 @@ This project is an educational implementation of a traditional Mapuche game.
 
 ## Credits
 
-Based on the traditional Mapuche board game Komikan. Learn more at [Komikan on Adrián Cheuque Pan's website](https://adriancheuquepan.cl/komikan/).
+Based on the traditional Mapuche board game Komikan. Learn more at [Komikan on Adrián Cheuque Pan's website](https://adriancheuquepan.cl/komikan/) or [Wikipedia](https://en.wikipedia.org/wiki/Komikan).
