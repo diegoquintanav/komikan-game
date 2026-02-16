@@ -1,6 +1,9 @@
 [project]
 dependencies = [
   "pygame>=2.6.1",
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+  "pydantic>=2.0.0",
 ]
 description = "A pygame version of the Komikan Game (<https://adriancheuquepan.cl/komikan/>)"
 name = "komikan"
@@ -13,10 +16,13 @@ dev = [
   "commitizen>=4.10.0",
   "pytest>=9.0.2",
   "ruff>=0.14.8",
+  "httpx>=0.27.0",
+  "pytest-asyncio>=0.24.0",
 ]
 
 [project.scripts]
-komikan = "komikan:run.main"
+komikan = "komikan.run:main"
+komikan-api = "komikan.api.main:main"
 
 [build-system]
 build-backend = "uv_build"
