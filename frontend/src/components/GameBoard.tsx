@@ -45,9 +45,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-3 p-8 bg-gradient-to-br from-gray-100 to-gray-200 rounded-xl shadow-lg">
+    <div className="flex flex-col items-center gap-4 p-10 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl shadow-2xl border-2 border-slate-300">
       {Array.from({ length: BOARD_HEIGHT }, (_, y) => (
-        <div key={y} className="flex gap-3">
+        <div key={y} className="flex gap-4">
           {Array.from({ length: BOARD_WIDTH }, (_, x) => {
             const token = getTokenAtPosition(x, y);
             const disabled = isDisabledNode(x, y);
@@ -60,29 +60,29 @@ export const GameBoard: React.FC<GameBoardProps> = ({
                 onClick={() => !disabled && onNodeClick(x, y)}
                 disabled={disabled}
                 className={`
-                  w-24 h-24 rounded-xl border-3 transition-all shadow-md
-                  ${disabled ? 'bg-gray-300 cursor-not-allowed opacity-40 border-gray-400' : 'bg-white hover:bg-gray-50 hover:shadow-lg border-gray-400'}
-                  ${selected ? 'ring-4 ring-blue-500 border-blue-700 shadow-xl scale-105' : ''}
-                  ${validMove ? 'bg-green-50 border-green-600 ring-2 ring-green-400' : ''}
+                  w-28 h-28 rounded-2xl border-4 transition-all duration-200 shadow-lg
+                  ${disabled ? 'bg-slate-300 cursor-not-allowed opacity-40 border-slate-500' : 'bg-white hover:bg-slate-50 hover:shadow-xl hover:scale-105 border-slate-500'}
+                  ${selected ? 'ring-6 ring-blue-500 border-blue-700 shadow-2xl scale-110' : ''}
+                  ${validMove ? 'bg-emerald-50 border-emerald-600 ring-4 ring-emerald-400' : ''}
                   relative
                 `}
               >
                 {token && (
                   <div
                     className={`
-                      w-18 h-18 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
-                      ${token.side === 'pangui' ? 'bg-red-600 border-4 border-red-800' : 'bg-blue-600 border-4 border-blue-800'}
+                      w-20 h-20 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
+                      ${token.side === 'pangui' ? 'bg-red-600 border-4 border-red-900' : 'bg-blue-600 border-4 border-blue-900'}
                       ${currentPlayer === token.side ? 'ring-4 ring-yellow-400 animate-pulse' : ''}
-                      flex items-center justify-center text-white font-bold text-2xl shadow-lg
+                      flex items-center justify-center text-white font-bold text-3xl shadow-xl
                     `}
                   >
                     {token.side === 'pangui' ? 'P' : 'D'}
                   </div>
                 )}
                 {validMove && !token && (
-                  <div className="w-6 h-6 rounded-full bg-green-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse shadow-md" />
+                  <div className="w-8 h-8 rounded-full bg-emerald-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-pulse shadow-lg border-2 border-emerald-700" />
                 )}
-                <span className="absolute bottom-1 right-2 text-xs text-gray-600 font-mono">
+                <span className="absolute bottom-2 right-3 text-sm text-slate-600 font-mono font-semibold">
                   {x},{y}
                 </span>
               </button>
