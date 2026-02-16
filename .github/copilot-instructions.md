@@ -1,85 +1,93 @@
 # Copilot Instructions for Komikan Game
 
 ## Project Overview
-This is a Python-based board game project called "komikan-game" built with pygame and modern Python tooling. The game features a 5x8 node grid where two players start on opposite sides (north/south) and can move orthogonally and diagonally. The project focuses on clean development practices and modular game architecture.
 
-## Development Environment Setup
+Komikan is a traditional Mapuche board game (hunt game) where one player controls a **Pangui** (Puma, 1 token) and the other controls **Pu Trewa** (Dogs, 12 tokens) on a 5×8 node grid. North (Pangui) captures by jumping; South (Pu Trewa) wins by surrounding and trapping. See `docs/GAME_RULES.md` for full rules.
 
-### Python Environment
-- **Python Version**: 3.11 (specified in `.python-version`)
-- **Package Manager**: UV (modern Python package manager)
-- **Virtual Environment**: `.venv/` (managed by UV)
+## Roadmap
 
-### Key Commands
-```bash
-# Install dependencies
-uv sync
+This project is being incrementally converted into an MCP server. The roadmap is in `agent-roadmap/` with numbered prompt files. Each file contains instructions for a feature and can be used with `gh agent-task create -F agent-roadmap/<file>.md`. Follow features sequentially.
 
-# Run the game
-python main.py
-# or
-uv run python main.py
+## Tech Stack
 
-# Install new packages
-uv add <package-name>
+- **Python 3.11** (`.python-version`) — core runtime
+- **UV** — package manager (use `uv sync`, `uv add`, `uv run`)
+- **pygame 2.6.1** — game rendering (original interface)
+- **Ruff** — linter and formatter
+- **pytest** — test framework (71 tests)
+- **Commitizen** — conventional commits and versioning
+- **Pre-commit hooks** — commit message standards and code quality
 
-# Dev dependencies
-uv add --group dev <package-name>
+## Project Structure
+
+```
+src/komikan/
+├── __init__.py
+├── run.py           # Pygame entry point and Game class
+├── board.py         # GameBoard (5×8 grid), Node, movement/capture validation
+└── player.py        # Player, PlayerSide enum, GameState
+tests/
+├── conftest.py      # Shared fixtures (empty_board, board_with_players, etc.)
+├── test_board.py    # Node and board mechanics
+├── test_player.py   # Player and game state
+├── test_integration.py  # Full gameplay scenarios
+├── test_performance.py  # Performance and memory tests
+└── test_example.py  # Testing patterns template
+docs/
+└── GAME_RULES.md    # Full game rules documentation
+agent-roadmap/       # Incremental feature prompts for MCP conversion
+pyproject.toml       # Project config, dependencies, scripts
+pytest.ini           # Test configuration and custom markers
+.cz.toml             # Commitizen config (PEP 440 versioning)
+.pre-commit-config.yaml  # Ruff + commitizen hooks
 ```
 
-## Project Structure & Conventions
+## Essential Commands
 
-### Architecture
-- **Entry Point**: `main.py` - Pygame game loop and initialization
-- **Game Logic**: Modular classes for board, players, and game state
-- **Board System**: 5x8 node grid with orthogonal and diagonal movement
-- **Player System**: Two-player turn-based mechanics
-- **Configuration**: `pyproject.toml` - Modern Python project configuration using UV
-- **Dependencies**: Managed through `uv.lock` for reproducible builds
+```bash
+# Setup
+uv sync                          # Install all dependencies
 
-### Development Workflow
-- **Git Hooks**: Pre-commit hooks configured via `.pre-commit-config.yaml`
-- **Commit Standards**: Uses Commitizen for conventional commits
-  - Configuration in `.cz.toml`
-  - Enforces conventional commit format
-  - Automatic changelog generation on version bumps
-- **Version Management**: Uses semantic versioning with PEP 440 scheme
+# Run
+uv run python -m komikan.run     # Run the pygame game
+KOMIKAN_DEBUG=1 uv run python -m komikan.run  # Run with debug logging
 
-### Code Quality Setup
-- Pre-commit hooks enforce commit message standards
-- Commitizen integration for automated versioning
-- VS Code workspace has custom color theme (purple/pink themed)
+# Test
+uv run pytest tests/ -v          # Run all tests
+uv run pytest tests/test_board.py -v  # Run specific test file
+uv run pytest -m "not performance"    # Skip performance tests
 
-## Development Patterns
+# Lint & Format
+uv run ruff check .              # Lint
+uv run ruff format .             # Format
 
-### Adding New Features
-1. Use conventional commit messages (feat:, fix:, etc.)
-2. Install dependencies via `uv add` rather than pip
-3. Follow the existing simple module structure in `main.py`
+# Dependencies
+uv add <package>                 # Add runtime dependency
+uv add --group dev <package>     # Add dev dependency
 
-### Version Management
-- Use `cz bump` for version updates
-- Changelog automatically updated on version bumps
-- Tags follow `$version` format
+# Version
+cz bump                          # Bump version with changelog
+```
 
-### Dependencies
-- Runtime dependencies go in main `dependencies` array (pygame for game engine)
-- Development tools go in `[dependency-groups.dev]`
-- Currently includes commitizen for development workflow
+## Coding Guidelines
 
-### Game Architecture
-- **Board**: 5x8 grid of nodes (40 total positions)
-- **Players**: Start on north/south edges, move orthogonally and diagonally
-- **Movement**: Valid moves to adjacent nodes in all 8 directions
-- **Turn System**: Alternating player turns with move validation
+1. **Commits**: Use conventional commit format (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`).
+2. **Dependencies**: Always use `uv add`, never `pip install`.
+3. **Code style**: Ruff enforces formatting and linting. Run `uv run ruff check .` and `uv run ruff format .` before committing.
+4. **Tests**: Add tests in `tests/` using fixtures from `conftest.py`. Follow existing patterns in `test_example.py`.
+5. **Game logic**: Core logic lives in `board.py` (movement, capture, validation) and `player.py` (state). Keep rendering separate from logic.
+6. **Type hints**: Use Python type hints consistently (see existing code for patterns).
+7. **Logging**: Use `KOMIKAN_DEBUG=1` env var; never add print statements to production code.
 
-## Important Files
-- `main.py`: Application entry point
-- `pyproject.toml`: Project configuration and dependencies
-- `uv.lock`: Lock file for reproducible dependency installation
-- `.cz.toml`: Commitizen configuration for conventional commits
-- `.pre-commit-config.yaml`: Git hooks configuration
+## Key Game Constants (in `board.py`)
 
-## VS Code Configuration
-- Custom workspace colors (purple theme) in `.vscode/settings.json`
-- Whitespace visualization configured for better code readability
+- Board: 5 wide × 8 tall
+- Disabled nodes: `{(0, 2), (4, 2)}`
+- Disabled paths: Multiple diagonal restrictions (see `GameBoard.DISABLED_PATHS`)
+- North starts at `(2, 0)`, South has 12 tokens at rows 5–7
+
+## Test Markers
+
+- `@pytest.mark.slow` — long-running tests
+- `@pytest.mark.integration` — integration tests
+- `@pytest.mark.performance` — performance benchmarks
