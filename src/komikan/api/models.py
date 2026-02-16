@@ -29,6 +29,14 @@ class MoveRequest(BaseModel):
     to_y: int = Field(..., ge=0, lt=8)
 
 
+class CustomGameRequest(BaseModel):
+    """Request to create a game with custom starting positions."""
+
+    north_positions: List[TokenPosition]
+    south_positions: List[TokenPosition]
+    starting_player: PlayerSideModel = PlayerSideModel.NORTH
+
+
 class MoveRecord(BaseModel):
     """Record of a single move in the game."""
 

@@ -1,6 +1,6 @@
 // API client for Komikan game backend
 
-import type { GameState, MoveRequest, MoveRecord, ValidMovesResponse } from './types/game';
+import type { GameState, MoveRequest, MoveRecord, ValidMovesResponse, CustomGameRequest } from './types/game';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -11,6 +11,22 @@ export class GameAPI {
     });
     if (!response.ok) {
       throw new Error('Failed to create game');
+    }
+    const data = await response.json();
+    return data.game;
+  }
+
+  static async createCustomGame(request: CustomGameRequest): Promise<GameState> {
+    const response = await fetch(`${API_BASE_URL}/api/games/custom`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to create custom game');
     }
     const data = await response.json();
     return data.game;

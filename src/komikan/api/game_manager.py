@@ -18,7 +18,7 @@ from komikan.api.models import (
 class GameInstance:
     """Represents a single game instance with full state and history."""
 
-    def __init__(self, game_id: str):
+    def __init__(self, game_id: str, custom_positions: Optional[dict] = None):
         self.game_id = game_id
         self.board = GameBoard()
         self.core_state = CoreGameState()
@@ -26,7 +26,10 @@ class GameInstance:
         self.created_at = datetime.now()
         self.last_move_at: Optional[datetime] = None
         self.move_history: List[MoveRecord] = []
-        self._initialize_game()
+        if custom_positions:
+            self._initialize_custom_game(custom_positions)
+        else:
+            self._initialize_game()
 
     def _initialize_game(self):
         """Initialize the game with starting positions."""
@@ -41,6 +44,19 @@ class GameInstance:
         for x, y in south_positions:
             self.board.place_player(self.core_state.player_south, x, y)
             self.core_state.player_south.positions.append((x, y))
+
+    def _initialize_custom_game(self, custom_positions: dict):
+        """Initialize the game with custom positions and starting player."""
+        for x, y in custom_positions["north"]:
+            self.board.place_player(self.core_state.player_north, x, y)
+            self.core_state.player_north.positions.append((x, y))
+
+        for x, y in custom_positions["south"]:
+            self.board.place_player(self.core_state.player_south, x, y)
+            self.core_state.player_south.positions.append((x, y))
+
+        if custom_positions.get("starting_player") == PlayerSide.SOUTH:
+            self.core_state.current_player = self.core_state.player_south
 
     def get_current_player_side(self) -> PlayerSideModel:
         """Get the current player's side as API model."""
@@ -133,7 +149,9 @@ class GameInstance:
                     return False, None
             else:
                 # Try regular move
-                success = self.board.move_player(current_player, from_x, from_y, to_x, to_y)
+                success = self.board.move_player(
+                    current_player, from_x, from_y, to_x, to_y
+                )
                 if success:
                     current_player.positions.remove((from_x, from_y))
                     current_player.positions.append((to_x, to_y))
@@ -249,6 +267,25 @@ class GameManager:
         """Create a new game and return its instance."""
         game_id = str(uuid.uuid4())
         game = GameInstance(game_id)
+        self.games[game_id] = game
+        return game
+
+    def create_custom_game(
+        self,
+        north_positions: List[Tuple[int, int]],
+        south_positions: List[Tuple[int, int]],
+        starting_player: str = "pangui",
+    ) -> GameInstance:
+        """Create a new game with custom starting positions."""
+        game_id = str(uuid.uuid4())
+        custom_positions = {
+            "north": north_positions,
+            "south": south_positions,
+            "starting_player": PlayerSide.SOUTH
+            if starting_player == "pu trewa"
+            else PlayerSide.NORTH,
+        }
+        game = GameInstance(game_id, custom_positions=custom_positions)
         self.games[game_id] = game
         return game
 

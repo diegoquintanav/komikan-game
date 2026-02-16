@@ -14,6 +14,7 @@ from komikan.api.models import (
     MoveResponse,
     ValidMovesResponse,
     TokenPosition,
+    CustomGameRequest,
     ErrorResponse,
     MoveRecord,
 )
@@ -28,7 +29,10 @@ app = FastAPI(
 # Add CORS middleware for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],  # Vite and common dev ports
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ],  # Vite and common dev ports
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,13 +48,54 @@ async def root():
     return {"message": "Komikan Game API", "version": "1.0.0"}
 
 
-@app.post("/api/games", response_model=GameResponse, status_code=status.HTTP_201_CREATED)
+@app.post(
+    "/api/games", response_model=GameResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_game():
     """Create a new game and return its initial state."""
     game = game_manager.create_game()
     return GameResponse(
         game=game.to_api_model(),
         message="Game created successfully",
+    )
+
+
+DISABLED_NODES = {(0, 2), (4, 2)}
+
+
+@app.post(
+    "/api/games/custom",
+    response_model=GameResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_custom_game(request: CustomGameRequest):
+    """Create a new game with custom starting positions."""
+    all_positions = [(p.x, p.y) for p in request.north_positions] + [
+        (p.x, p.y) for p in request.south_positions
+    ]
+    for pos in all_positions:
+        if pos in DISABLED_NODES:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Position ({pos[0]}, {pos[1]}) is a disabled node",
+            )
+    if len(set(all_positions)) != len(all_positions):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Duplicate positions are not allowed",
+        )
+
+    north_pos = [(p.x, p.y) for p in request.north_positions]
+    south_pos = [(p.x, p.y) for p in request.south_positions]
+
+    game = game_manager.create_custom_game(
+        north_positions=north_pos,
+        south_positions=south_pos,
+        starting_player=request.starting_player.value,
+    )
+    return GameResponse(
+        game=game.to_api_model(),
+        message="Custom game created successfully",
     )
 
 
@@ -159,9 +204,15 @@ async def delete_game(game_id: str):
 
 
 # Serve React frontend in production
-frontend_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "frontend", "dist")
+frontend_path = os.path.join(
+    os.path.dirname(__file__), "..", "..", "..", "frontend", "dist"
+)
 if os.path.exists(frontend_path):
-    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_path, "assets")), name="assets")
+    app.mount(
+        "/assets",
+        StaticFiles(directory=os.path.join(frontend_path, "assets")),
+        name="assets",
+    )
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):

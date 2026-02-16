@@ -14,6 +14,7 @@ A digital implementation of Komikan, a traditional Mapuche board game from south
 ## Game Overview
 
 Komikan is an asymmetric hunt game where:
+
 - **North (Pangui/Puma)**: 1 red token, can capture by jumping
 - **South (Pu Trewa/Dogs)**: 12 blue tokens, win by surrounding
 - **Board**: 5×8 grid with special disabled nodes and paths
@@ -32,17 +33,20 @@ See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone https://github.com/diegoquintanav/komikan-game.git
    cd komikan-game
    ```
 
 2. **Install Python dependencies:**
+
    ```bash
    pip install -e .
    ```
 
 3. **For web version, install frontend dependencies:**
+
    ```bash
    cd frontend
    npm install
@@ -56,19 +60,23 @@ See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 The easiest way to play Komikan with a modern browser interface:
 
 1. **Start the backend API:**
+
    ```bash
    python -m uvicorn komikan.api.main:app --reload
    ```
-   The API will be available at http://localhost:8000
+
+   The API will be available at <http://localhost:8000>
 
 2. **In a new terminal, start the frontend:**
+
    ```bash
    cd frontend
    npm run dev
    ```
-   The web interface will be available at http://localhost:5173
 
-3. **Open your browser and visit:** http://localhost:5173
+   The web interface will be available at <http://localhost:5173>
+
+3. **Open your browser and visit:** <http://localhost:5173>
 
 4. **Play the game:**
    - Click "New Game" to start
@@ -88,6 +96,7 @@ python -m komikan
 ```
 
 **Controls:**
+
 - **Mouse**: Click to select and move tokens
 - **Keyboard**: WASD or arrow keys to move selected token
 - **ESC**: Deselect or exit (double-tap within 2 seconds)
@@ -101,9 +110,10 @@ docker-compose up
 ```
 
 Then visit:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
+
+- Frontend: <http://localhost:5173>
+- Backend API: <http://localhost:8000>
+- API Docs: <http://localhost:8000/docs>
 
 ## API Usage
 
@@ -139,18 +149,20 @@ curl http://localhost:8000/api/games/abc123/moves
 - `GET /api/games/{game_id}/valid-moves` - Get valid moves for a token
 - `DELETE /api/games/{game_id}` - Delete/forfeit a game
 
-**Interactive API Documentation:** http://localhost:8000/docs
+**Interactive API Documentation:** <http://localhost:8000/docs>
 
 ## Testing
 
 ### Prerequisites for Testing
 
 Install development dependencies:
+
 ```bash
 pip install -e ".[dev]"
 ```
 
 Or if using the dev dependency group:
+
 ```bash
 # The dev dependencies are already defined in pyproject.toml
 # They will be installed with the editable install above
@@ -159,11 +171,13 @@ Or if using the dev dependency group:
 ### Running All Tests
 
 Run the complete test suite (82 tests):
+
 ```bash
 pytest tests/ -v
 ```
 
 **Expected output:**
+
 ```
 =================== 82 passed, 1 skipped, 1 xfailed in 0.5s ===================
 ```
@@ -177,6 +191,7 @@ pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
 ```
 
 This tests:
+
 - Board initialization and node management
 - Movement validation and path restrictions
 - Capture mechanics
@@ -190,6 +205,7 @@ pytest tests/test_api.py -v
 ```
 
 This tests:
+
 - Game creation and retrieval
 - Move submission and validation
 - Move history tracking
@@ -197,6 +213,7 @@ This tests:
 - Error handling
 
 **Sample output:**
+
 ```
 tests/test_api.py::test_create_game PASSED
 tests/test_api.py::test_make_valid_move PASSED
@@ -231,6 +248,7 @@ npm run build
 This runs TypeScript compiler (`tsc -b`) to check for type errors.
 
 **Successful output:**
+
 ```
 vite v8.0.0-beta.14 building client environment for production...
 transforming...
@@ -253,7 +271,7 @@ cd frontend
 npm run dev
 ```
 
-Then visit http://localhost:5173 to verify the frontend works correctly.
+Then visit <http://localhost:5173> to verify the frontend works correctly.
 
 #### 4. Production Build Test
 
@@ -326,18 +344,23 @@ komikan-game/
 ### Common Issues
 
 **"No module named 'komikan'"**
+
 - Make sure you installed the package: `pip install -e .`
 
 **"Command not found: npm"**
-- Install Node.js from https://nodejs.org/
+
+- Install Node.js from <https://nodejs.org/>
 
 **"Port 8000 already in use"**
+
 - Stop any other application using port 8000, or run the API on a different port:
+
   ```bash
   python -m uvicorn komikan.api.main:app --port 8001
   ```
 
 **Frontend can't connect to API**
+
 - Make sure the backend is running on port 8000
 - Check the `.env` file in the frontend directory
 

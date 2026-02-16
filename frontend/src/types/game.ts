@@ -50,3 +50,18 @@ export interface ValidMovesResponse {
   valid_moves: TokenPosition[];
   valid_captures: [TokenPosition, TokenPosition][];
 }
+
+export interface CustomGameRequest {
+  north_positions: TokenPosition[];
+  south_positions: TokenPosition[];
+  starting_player: PlayerSide;
+}
+
+export interface ExampleScenario {
+  id: string;
+  title: string;
+  description: string;
+  northPositions: [number, number][];
+  southPositions: [number, number][];
+  startingPlayer: PlayerSide;
+}

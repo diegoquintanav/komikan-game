@@ -2,16 +2,26 @@ import { useState, useEffect } from 'react';
 import { GameBoard } from './components/GameBoard';
 import { GameStatus } from './components/GameStatus';
 import { MoveHistory } from './components/MoveHistory';
+import { ExampleGames } from './components/ExampleGames';
 import { GameAPI } from './api';
-import type { GameState, MoveRecord, TokenPosition } from './types/game';
+import type { GameState, MoveRecord, TokenPosition, ExampleScenario } from './types/game';
+
+const DISABLED_NODES: [number, number][] = [[0, 2], [4, 2]];
 
 function App() {
   const [game, setGame] = useState<GameState | null>(null);
   const [moves, setMoves] = useState<MoveRecord[]>([]);
   const [selectedPosition, setSelectedPosition] = useState<TokenPosition | null>(null);
   const [validMoves, setValidMoves] = useState<TokenPosition[]>([]);
+  const [captureDestinations, setCaptureDestinations] = useState<TokenPosition[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const clearSelection = () => {
+    setSelectedPosition(null);
+    setValidMoves([]);
+    setCaptureDestinations([]);
+  };
 
   const createNewGame = async () => {
     try {
@@ -20,13 +30,66 @@ function App() {
       const newGame = await GameAPI.createGame();
       setGame(newGame);
       setMoves([]);
-      setSelectedPosition(null);
-      setValidMoves([]);
+      clearSelection();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create game');
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadExampleGame = async (scenario: ExampleScenario) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const newGame = await GameAPI.createCustomGame({
+        north_positions: scenario.northPositions.map(([x, y]) => ({ x, y })),
+        south_positions: scenario.southPositions.map(([x, y]) => ({ x, y })),
+        starting_player: scenario.startingPlayer,
+      });
+      setGame(newGame);
+      setMoves([]);
+      clearSelection();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load example game');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getInvalidMoveReason = (x: number, y: number): string | null => {
+    if (!game || !selectedPosition) return null;
+
+    // Check if it's a disabled node
+    if (DISABLED_NODES.some(([dx, dy]) => dx === x && dy === y)) {
+      return 'That position is disabled and cannot be moved to.';
+    }
+
+    // Check if it's occupied by the opponent
+    const opponentPositions =
+      game.current_player === 'pangui'
+        ? game.south_player.positions
+        : game.north_player.positions;
+    if (opponentPositions.some(([px, py]) => px === x && py === y)) {
+      return "That position is occupied by the opponent's piece.";
+    }
+
+    // If it's a known valid move/capture, let the API handle it
+    const allDestinations = [...validMoves, ...captureDestinations];
+    if (allDestinations.some((m) => m.x === x && m.y === y)) {
+      return null;
+    }
+
+    // Not in valid moves list - explain why
+    const dx = Math.abs(x - selectedPosition.x);
+    const dy = Math.abs(y - selectedPosition.y);
+    const isAdjacent = dx <= 1 && dy <= 1 && (dx + dy > 0);
+
+    if (!isAdjacent) {
+      return `That position is not reachable from (${selectedPosition.x}, ${selectedPosition.y}). You can only move to adjacent nodes or capture by jumping over an opponent.`;
+    }
+
+    return `The path from (${selectedPosition.x}, ${selectedPosition.y}) to (${x}, ${y}) is blocked.`;
   };
 
   const handleNodeClick = async (x: number, y: number) => {
@@ -35,23 +98,33 @@ function App() {
     try {
       setError(null);
 
-      // Check if clicking on a token
+      // Check if clicking on current player's token
       const currentPlayerPositions =
         game.current_player === 'pangui'
           ? game.north_player.positions
           : game.south_player.positions;
 
-      const clickedToken = currentPlayerPositions.find(
+      const clickedOwnToken = currentPlayerPositions.find(
         ([px, py]) => px === x && py === y
       );
 
-      if (clickedToken) {
+      if (clickedOwnToken) {
         // Select this token and get valid moves
         setSelectedPosition({ x, y });
         const validMovesData = await GameAPI.getValidMoves(game.game_id, x, y);
         setValidMoves(validMovesData.valid_moves);
+        setCaptureDestinations(
+          validMovesData.valid_captures.map(([dest]) => dest)
+        );
       } else if (selectedPosition) {
-        // Try to make a move
+        // Check client-side first for a better error message
+        const reason = getInvalidMoveReason(x, y);
+        if (reason) {
+          setError(reason);
+          return;
+        }
+
+        // Try to make the move via API
         try {
           const result = await GameAPI.makeMove(game.game_id, {
             from_x: selectedPosition.x,
@@ -62,15 +135,33 @@ function App() {
 
           setGame(result.game);
           setMoves((prev) => [...prev, result.move]);
-          setSelectedPosition(null);
-          setValidMoves([]);
+          clearSelection();
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Invalid move');
-          // Don't clear selection on invalid move
         }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
+    }
+  };
+
+  const importGame = async (data: { game: GameState; moves: MoveRecord[] }) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const savedGame = data.game;
+      const newGame = await GameAPI.createCustomGame({
+        north_positions: savedGame.north_player.positions.map(([x, y]) => ({ x, y })),
+        south_positions: savedGame.south_player.positions.map(([x, y]) => ({ x, y })),
+        starting_player: savedGame.current_player,
+      });
+      setGame(newGame);
+      setMoves(data.moves);
+      clearSelection();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to import game');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -131,6 +222,7 @@ function App() {
                 southPlayer={game.south_player}
                 selectedPosition={selectedPosition}
                 validMoves={validMoves}
+                captureDestinations={captureDestinations}
                 onNodeClick={handleNodeClick}
                 currentPlayer={game.current_player}
               />
@@ -138,7 +230,8 @@ function App() {
 
             <div className="space-y-6">
               <GameStatus game={game} />
-              <MoveHistory moves={moves} />
+              <ExampleGames onLoadScenario={loadExampleGame} loading={loading} />
+              <MoveHistory moves={moves} game={game} onImportGame={importGame} />
             </div>
           </div>
         )}
