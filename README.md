@@ -27,16 +27,19 @@ KOMIKAN_DEBUG=1 uv run python main.py
 ## Game Rules
 
 ### Setup
+
 - **North Player**: 1 token starts at center-top position (2, 0)
 - **South Player**: 12 tokens start across bottom two rows (y=6,7)
 - **Disabled Nodes**: Positions (0,2) and (4,2) are blocked
 
 ### Movement
+
 - **Valid Directions**: Orthogonal (up/down/left/right) and diagonal
 - **Path Restrictions**: Some diagonal paths are disabled for strategic balance
 - **Turn-based**: Players alternate turns
 
 ### Capture Mechanics
+
 - **North Player Only**: Can capture by jumping over south tokens
 - **Jump Pattern**: Must land on empty node directly beyond captured token
 - **Capture Range**: One token per jump in any valid direction
@@ -44,10 +47,12 @@ KOMIKAN_DEBUG=1 uv run python main.py
 ## Controls
 
 ### Mouse Controls
+
 - **Left Click**: Select token or move to highlighted position
 - **Right Click**: Deselect current token
 
 ### Keyboard Controls
+
 - **WASD/Arrow Keys**: Move selected token orthogonally
 - **Q/E or Z/C**: Move selected token diagonally (up-left/up-right or down-left/down-right)
 - **ESC**: Deselect token (double ESC within 2 seconds to exit)
@@ -62,6 +67,7 @@ KOMIKAN_DEBUG=1 uv run python main.py
 ```
 
 Analyze logs with the included tool:
+
 ```bash
 python test_logging.py
 ```
@@ -71,6 +77,7 @@ See [DEBUG_LOGGING.md](DEBUG_LOGGING.md) for detailed logging documentation.
 ## Development
 
 Built with modern Python tooling:
+
 - **Python 3.11**: Core runtime
 - **pygame 2.6.1**: Game engine and rendering
 - **UV**: Package management and virtual environment
@@ -102,6 +109,7 @@ python run_tests.py coverage
 ```
 
 **Test Coverage**: 54 comprehensive tests covering:
+
 - Node and board mechanics
 - Movement validation and path restrictions
 - Capture logic and edge cases
@@ -110,7 +118,8 @@ python run_tests.py coverage
 - Performance and memory usage validation
 
 ### Project Structure
-```
+
+```text
 main.py              # Game loop and rendering
 board.py             # Game board logic and validation
 player.py            # Player state and game management
@@ -119,6 +128,7 @@ DEBUG_LOGGING.md     # Logging system documentation
 ```
 
 ### Adding Features
+
 ```bash
 # Install new dependencies
 uv add <package-name>

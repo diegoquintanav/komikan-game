@@ -49,8 +49,8 @@ pytest.ini           # Test configuration and custom markers
 uv sync                          # Install all dependencies
 
 # Run
-uv run python -m komikan.run     # Run the pygame game
-KOMIKAN_DEBUG=1 uv run python -m komikan.run  # Run with debug logging
+uv run python -m komikan     # Run the pygame game
+KOMIKAN_DEBUG=1 uv run python -m komikan  # Run with debug logging
 
 # Test
 uv run pytest tests/ -v          # Run all tests
@@ -78,6 +78,13 @@ cz bump                          # Bump version with changelog
 5. **Game logic**: Core logic lives in `board.py` (movement, capture, validation) and `player.py` (state). Keep rendering separate from logic.
 6. **Type hints**: Use Python type hints consistently (see existing code for patterns).
 7. **Logging**: Use `KOMIKAN_DEBUG=1` env var; never add print statements to production code.
+
+## Agent Update Reflection
+
+- **Purpose:** When this file is edited, the Copilot agent MUST evaluate whether the change requires code modifications or other repository edits.
+- **If code changes are required:** the agent should make the edits (using the workspace), run or suggest running tests when feasible, and include an explicit report in its final message: `Applies to code: Yes` followed by a short list of modified files (workspace-relative links).
+- **If no code changes are required:** the agent should state `Applies to code: No` in its final message.
+- **Tracking:** For multi-step tasks invoked because of these instructions, the agent MUST start with the todo list tool and keep it updated until completion.
 
 ## Key Game Constants (in `board.py`)
 

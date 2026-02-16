@@ -15,7 +15,7 @@ The game is played on a 5×8 grid of **nodes** (intersections), connected by ort
 - **Disabled Nodes**: Positions (0,2) and (4,2) are blocked and cannot be occupied or traversed.
 - **Disabled Paths**: Several diagonal paths in the upper portion of the board (rows 0–3) and certain diagonal paths in the lower portion are disabled to shape the strategic topology of the board. The upper triangle area has restricted diagonal movement to create the distinctive Komikan board shape.
 
-```
+```text
   0   1   2   3   4       (x-axis)
 
   .---.---.---.---.   0   North start: Pangui at (2,0)
@@ -62,6 +62,7 @@ On each turn, a player moves **one** of their tokens to an adjacent node along a
 ### Valid Directions
 
 Tokens can move in up to **8 directions**:
+
 - **Orthogonal**: Up, Down, Left, Right
 - **Diagonal**: Up-Left, Up-Right, Down-Left, Down-Right
 
@@ -102,16 +103,3 @@ A capture move covers a distance of exactly **2 steps** in one direction.
 ### Draw/Stalemate
 
 If the South player has no valid moves on their turn, the game may be declared a stalemate. Proper strategy for South involves coordinated movement to corner the Pangui while avoiding unnecessary losses.
-
-## Strategy Tips
-
-### For the Pangui (North)
-- Use captures aggressively early to reduce the number of dogs.
-- Avoid getting cornered — stay mobile in the center of the board.
-- Use the upper portion of the board where diagonal restrictions limit the dogs' movement options.
-
-### For the Pu Trewa (South)
-- Advance as a coordinated group — do not leave isolated tokens.
-- Use numerical advantage to create a net around the Pangui.
-- Force the Pangui toward edges and corners where escape routes are limited.
-- Sacrifice individual tokens strategically to set up trapping positions.
