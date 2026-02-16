@@ -1,145 +1,138 @@
-# Komikan Board Game
+# Komikan Game
 
-A Python-based board game built with pygame featuring a 5x8 node grid where two players compete in asymmetric gameplay.
+A digital implementation of Komikan, a traditional Mapuche board game from southern Chile and Argentina. This project includes both a Pygame desktop version and a modern web interface with REST API.
 
-## Game Features
+## Features
 
-- **5x8 Grid Network**: Game board with 40 nodes connected orthogonally and diagonally
-- **Asymmetric Gameplay**: North player (1 token) vs South player (12 tokens)
-- **Multiple Movement Types**: Regular moves and capture attacks
-- **Visual Feedback**: Player highlighting, coordinate labels, and move validation
-- **Dual Input Support**: Both mouse and keyboard controls
-- **Debug Logging**: Comprehensive move tracking for replay and analysis
+- **Pygame Desktop Version**: Traditional desktop game with visual interface
+- **REST API**: FastAPI-based backend for game management
+- **Web Interface**: React + TypeScript frontend with real-time game state
+- **Multiple Concurrent Games**: Support for multiple simultaneous game sessions
+- **Move History**: Complete audit trail of all moves with timestamps
+- **Win Condition Detection**: Automatic detection of game-ending states
+
+## Game Overview
+
+Komikan is an asymmetric hunt game where:
+- **North (Pangui/Puma)**: 1 red token, can capture by jumping
+- **South (Pu Trewa/Dogs)**: 12 blue tokens, win by surrounding
+- **Board**: 5×8 grid with special disabled nodes and paths
+- **Objective**: North captures tokens, South traps the Puma
+
+See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 
 ## Quick Start
 
-```bash
-# Install dependencies
-uv sync
+### Web Application
 
-# Run the game
-uv run python main.py
+1. **Install backend dependencies:**
+   ```bash
+   pip install -e .
+   ```
 
-# Run with debug logging
-KOMIKAN_DEBUG=1 uv run python main.py
-```
+2. **Install frontend dependencies:**
+   ```bash
+   cd frontend
+   npm install
+   ```
 
-## Game Rules
+3. **Development mode** (separate servers):
+   ```bash
+   # Terminal 1: Start API
+   python -m uvicorn komikan.api.main:app --reload
 
-### Setup
+   # Terminal 2: Start frontend
+   cd frontend
+   npm run dev
+   ```
 
-- **North Player**: 1 token starts at center-top position (2, 0)
-- **South Player**: 12 tokens start across bottom two rows (y=6,7)
-- **Disabled Nodes**: Positions (0,2) and (4,2) are blocked
+4. **Access the application:**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
 
-### Movement
-
-- **Valid Directions**: Orthogonal (up/down/left/right) and diagonal
-- **Path Restrictions**: Some diagonal paths are disabled for strategic balance
-- **Turn-based**: Players alternate turns
-
-### Capture Mechanics
-
-- **North Player Only**: Can capture by jumping over south tokens
-- **Jump Pattern**: Must land on empty node directly beyond captured token
-- **Capture Range**: One token per jump in any valid direction
-
-## Controls
-
-### Mouse Controls
-
-- **Left Click**: Select token or move to highlighted position
-- **Right Click**: Deselect current token
-
-### Keyboard Controls
-
-- **WASD/Arrow Keys**: Move selected token orthogonally
-- **Q/E or Z/C**: Move selected token diagonally (up-left/up-right or down-left/down-right)
-- **ESC**: Deselect token (double ESC within 2 seconds to exit)
-- **Auto-selection**: Pressing movement keys automatically selects your active token
-
-## Debug Logging
-
-Enable comprehensive move logging for replay and analysis:
+### Using Docker
 
 ```bash
-KOMIKAN_DEBUG=1 uv run python main.py
+docker-compose up
 ```
 
-Analyze logs with the included tool:
+### Desktop Game
 
 ```bash
-python test_logging.py
+python -m komikan
 ```
 
-See [DEBUG_LOGGING.md](DEBUG_LOGGING.md) for detailed logging documentation.
+## API Endpoints
+
+- `POST /api/games` - Create a new game
+- `GET /api/games/{game_id}` - Get current game state
+- `POST /api/games/{game_id}/moves` - Submit a move
+- `GET /api/games/{game_id}/moves` - Get move history
+- `GET /api/games/{game_id}/valid-moves` - Get valid moves for a token
+- `DELETE /api/games/{game_id}` - Delete/forfeit a game
 
 ## Development
 
-Built with modern Python tooling:
-
-- **Python 3.11**: Core runtime
-- **pygame 2.6.1**: Game engine and rendering
-- **UV**: Package management and virtual environment
-- **Commitizen**: Conventional commits and versioning
-- **pytest**: Comprehensive test suite with 54 tests
-
-### Testing
-
-Run the comprehensive test suite:
-
-```bash
-# Run all tests
-uv run pytest tests/ -v
-
-# Or use the test runner script
-python run_tests.py all
-
-# Run specific test categories
-python run_tests.py board      # Board logic tests
-python run_tests.py player     # Player and game state tests
-python run_tests.py integration # Integration and scenario tests
-python run_tests.py performance # Performance and memory tests
-
-# Quick test run (stop on first failure)
-python run_tests.py fast
-
-# Test with coverage report
-python run_tests.py coverage
-```
-
-**Test Coverage**: 54 comprehensive tests covering:
-
-- Node and board mechanics
-- Movement validation and path restrictions
-- Capture logic and edge cases
-- Player management and game state
-- Integration scenarios and complete gameplay
-- Performance and memory usage validation
+See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
 
 ### Project Structure
 
-```text
-main.py              # Game loop and rendering
-board.py             # Game board logic and validation
-player.py            # Player state and game management
-test_logging.py      # Log analysis tool
-DEBUG_LOGGING.md     # Logging system documentation
+```
+komikan-game/
+├── src/komikan/          # Python source code
+│   ├── board.py          # Game board logic
+│   ├── player.py         # Player management
+│   ├── run.py            # Pygame interface
+│   └── api/              # FastAPI REST API
+│       ├── main.py       # API endpoints
+│       ├── models.py     # Pydantic models
+│       └── game_manager.py  # Game state management
+├── frontend/             # React + TypeScript frontend
+│   ├── src/
+│   │   ├── components/   # React components
+│   │   ├── types/        # TypeScript types
+│   │   └── api.ts        # API client
+│   └── dist/             # Production build
+├── tests/                # Test suite (82 tests)
+│   ├── test_board.py     # Board logic tests
+│   ├── test_player.py    # Player tests
+│   ├── test_integration.py  # Integration tests
+│   └── test_api.py       # API tests
+└── docs/                 # Documentation
+    └── GAME_RULES.md     # Complete game rules
 ```
 
-### Adding Features
+## Testing
 
 ```bash
-# Install new dependencies
-uv add <package-name>
+# All tests (82 tests)
+pytest tests/ -v
 
-# Development dependencies
-uv add --group dev <package-name>
+# Backend tests only
+pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
 
-# Version bump with changelog
-cz bump
+# API tests only
+pytest tests/test_api.py -v
 ```
+
+## Technology Stack
+
+- **Backend**: Python 3.11+, FastAPI, Pydantic, Pygame
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Testing**: pytest, httpx, pytest-asyncio
+- **Deployment**: Docker, docker-compose
+
+## Win Conditions
+
+- **North (Pangui) wins**: Captures enough South tokens (≤4 remaining)
+- **South (Pu Trewa) wins**: Traps North with no valid moves
+- **Stalemate**: South has no valid moves on their turn
 
 ## License
 
-Open source - see project files for details.
+This project is an educational implementation of a traditional Mapuche game.
+
+## Credits
+
+Based on the traditional Mapuche board game Komikan. Learn more at [Komikan on Adrián Cheuque Pan's website](https://adriancheuquepan.cl/komikan/).
