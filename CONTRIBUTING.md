@@ -30,8 +30,13 @@ cd frontend && npm install && cd ..
 ## Running tests
 
 ```bash
-uv run pytest tests/ -v            # Python tests
-cd frontend && npm run build       # TypeScript type-check
+uv run pytest tests/ -v                           # All Python tests (~84 pass, 1 skip, 1 xfail)
+uv run pytest tests/test_board.py::TestBoardCapture -v  # Single class
+uv run pytest tests/test_api.py::test_create_game -v    # Single function
+uv run pytest -m "not performance"                # Skip slow benchmarks
+uv run pytest tests/ --cov=komikan --cov-report=html  # Coverage report
+
+cd frontend && npm run build       # TypeScript type-check + production build
 cd frontend && npm run lint        # ESLint
 ```
 

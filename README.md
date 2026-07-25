@@ -42,8 +42,8 @@ See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 ### Prerequisites
 
 - **Python 3.11 or higher**
-- **Node.js 18 or higher** (for web version)
-- **pip** (Python package installer)
+- **Node.js 22 or higher** (for web version)
+- **[uv](https://docs.astral.sh/uv/)** (Python package manager)
 
 ### Installation
 
@@ -57,7 +57,7 @@ See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 2. **Install Python dependencies:**
 
    ```bash
-   pip install -e .
+   uv sync
    ```
 
 3. **For web version, install frontend dependencies:**
@@ -77,7 +77,7 @@ The easiest way to play Komikan with a modern browser interface:
 1. **Start the backend API:**
 
    ```bash
-   python -m uvicorn komikan.api.main:app --reload
+   uv run python -m uvicorn komikan.api.main:app --reload
    ```
 
    The API will be available at <http://localhost:8000>
@@ -107,7 +107,7 @@ The easiest way to play Komikan with a modern browser interface:
 Play using the traditional desktop interface:
 
 ```bash
-python -m komikan
+uv run python -m komikan
 ```
 
 **Controls:**
@@ -129,6 +129,19 @@ Then visit:
 - Frontend: <http://localhost:5173>
 - Backend API: <http://localhost:8000>
 - API Docs: <http://localhost:8000/docs>
+
+### Option 4: Production Mode (Integrated)
+
+Build the frontend and let FastAPI serve it as static files:
+
+```bash
+cd frontend
+npm run build
+cd ..
+uv run python -m uvicorn komikan.api.main:app --host 0.0.0.0 --port 8000
+```
+
+Then visit <http://localhost:8000> — both the API and the web interface are served from the same port.
 
 ## API Usage
 
@@ -173,28 +186,21 @@ curl http://localhost:8000/api/games/abc123/moves
 Install development dependencies:
 
 ```bash
-pip install -e ".[dev]"
-```
-
-Or if using the dev dependency group:
-
-```bash
-# The dev dependencies are already defined in pyproject.toml
-# They will be installed with the editable install above
+uv sync
 ```
 
 ### Running All Tests
 
-Run the complete test suite (82 tests):
+Run the complete test suite (84 tests):
 
 ```bash
-pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 **Expected output:**
 
 ```
-=================== 82 passed, 1 skipped, 1 xfailed in 0.5s ===================
+=================== 84 passed, 1 skipped, 1 xfailed in 0.5s ===================
 ```
 
 ### Testing the Backend/API
@@ -301,50 +307,48 @@ This builds the production bundle and serves it locally for testing.
 ### Running Tests with Coverage
 
 ```bash
-# Install coverage tool if not already installed
-pip install pytest-cov
-
 # Run tests with coverage report
-pytest tests/ --cov=komikan --cov-report=html
+uv run pytest tests/ --cov=komikan --cov-report=html
 
 # Open htmlcov/index.html in your browser to see detailed coverage
 ```
-
-## Development
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
 
 ### Project Structure
 
 ```
 komikan-game/
-├── src/komikan/          # Python source code
-│   ├── board.py          # Game board logic
-│   ├── player.py         # Player management
-│   ├── run.py            # Pygame interface
-│   └── api/              # FastAPI REST API
-│       ├── main.py       # API endpoints
-│       ├── models.py     # Pydantic models
-│       └── game_manager.py  # Game state management
-├── frontend/             # React + TypeScript frontend
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── types/        # TypeScript types
-│   │   └── api.ts        # API client
-│   └── dist/             # Production build
-├── tests/                # Test suite (82 tests)
-│   ├── test_board.py     # Board logic tests
-│   ├── test_player.py    # Player tests
-│   ├── test_integration.py  # Integration tests
-│   └── test_api.py       # API tests
-└── docs/                 # Documentation
-    └── GAME_RULES.md     # Complete game rules
+├── src/komikan/              # Python source code
+│   ├── board.py              # Game board logic (5×8 grid, movement/capture)
+│   ├── player.py             # Player management (PlayerSide enum, GameState)
+│   ├── run.py                # Pygame interface
+│   └── api/                  # FastAPI REST API
+│       ├── main.py           # API endpoints
+│       ├── models.py         # Pydantic models
+│       └── game_manager.py   # Game state management
+├── frontend/                 # React + TypeScript frontend
+│   └── src/
+│       ├── components/       # React components (GameBoard, GameStatus, MoveHistory, ExampleGames)
+│       ├── types/            # TypeScript types (game.ts)
+│       ├── data/             # Static data (exampleScenarios.ts)
+│       └── api.ts            # API client
+├── tests/                    # Test suite (84 tests)
+│   ├── conftest.py           # Shared fixtures
+│   ├── test_board.py         # Board logic tests
+│   ├── test_player.py        # Player tests
+│   ├── test_integration.py   # Integration tests
+│   ├── test_api.py           # API tests
+│   ├── test_performance.py   # Performance benchmarks
+│   └── test_example.py       # Testing patterns template
+├── docs/                     # Documentation
+│   ├── GAME_RULES.md         # Complete game rules
+│   └── adr/                  # Architecture Decision Records
+└── openspec/                 # SDD change artifacts
 ```
 
 ## Technology Stack
 
 - **Backend**: Python 3.11+, FastAPI, Pydantic, Pygame
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite
 - **Testing**: pytest, httpx, pytest-asyncio
 - **Deployment**: Docker, docker-compose
 
@@ -360,7 +364,7 @@ komikan-game/
 
 **"No module named 'komikan'"**
 
-- Make sure you installed the package: `pip install -e .`
+- Make sure you installed the package: `uv sync`
 
 **"Command not found: npm"**
 
@@ -371,7 +375,7 @@ komikan-game/
 - Stop any other application using port 8000, or run the API on a different port:
 
   ```bash
-  python -m uvicorn komikan.api.main:app --port 8001
+  uv run python -m uvicorn komikan.api.main:app --port 8001
   ```
 
 **Frontend can't connect to API**

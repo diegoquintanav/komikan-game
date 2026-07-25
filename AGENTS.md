@@ -36,7 +36,7 @@ uv run komikan-api                                # FastAPI dev server (port 800
 # or explicitly:
 uv run python -m uvicorn komikan.api.main:app --reload --host 0.0.0.0 --port 8000
 
-uv run pytest tests/ -v                           # all tests (~82 pass, 1 skip, 1 xfail)
+uv run pytest tests/ -v                           # all tests (~84 pass, 1 skip, 1 xfail)
 uv run pytest tests/test_board.py::TestBoardCapture -v   # single class
 uv run pytest tests/test_api.py::test_create_game -v     # single function
 uv run pytest -m "not performance"                # skip slow benchmarks
@@ -106,8 +106,34 @@ gh agent-task create -F agent-roadmap/<file>.md
 
 ---
 
+## Agent Update Reflection
+
+- **Purpose:** When agent instructions are edited, the agent MUST evaluate whether the change requires code modifications or other repository edits.
+- **If code changes are required:** the agent should make the edits (using the workspace), run or suggest running tests when feasible, and include an explicit report in its final message: `Applies to code: Yes` followed by a short list of modified files (workspace-relative links).
+- **If no code changes are required:** the agent should state `Applies to code: No` in its final message.
+- **Tracking:** For multi-step tasks invoked because of these instructions, the agent MUST start with the todo list tool and keep it updated until completion.
+
+---
+
+## Key Game Constants (in `board.py`)
+
+- Board: 5 wide × 8 tall
+- Disabled nodes: `{(0, 2), (4, 2)}`
+- Disabled paths: Multiple diagonal restrictions (see `GameBoard.DISABLED_PATHS`)
+- North starts at `(2, 0)`, South has 12 tokens at rows 5–7
+
+---
+
+## Test Markers
+
+- `@pytest.mark.slow` — long-running tests
+- `@pytest.mark.integration` — integration tests
+- `@pytest.mark.performance` — performance benchmarks
+
+---
+
 ## Key references
 
 - Game rules: `docs/GAME_RULES.md`
-- Full Python coding guidelines: `.github/copilot-instructions.md`
+- Architecture Decision Records: `docs/adr/`
 - Version bumping: `cz bump` (generates changelog, PEP 440 versioning via Commitizen)
