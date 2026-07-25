@@ -15,7 +15,6 @@ from komikan.api.models import (
     ValidMovesResponse,
     TokenPosition,
     CustomGameRequest,
-    ErrorResponse,
     MoveRecord,
 )
 
