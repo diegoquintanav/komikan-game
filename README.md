@@ -367,6 +367,7 @@ komikan-game/
 ## License
 
 This project is an educational implementation of a traditional Mapuche game.
+See [LICENSE](LICENSE) for details.
 
 ## Credits
 
