@@ -11,6 +11,15 @@ A digital implementation of Komikan, a traditional Mapuche board game from south
 - **Move History**: Complete audit trail of all moves with timestamps
 - **Win Condition Detection**: Automatic detection of game-ending states
 
+## Screenshots
+
+<!-- Replace placeholders with actual screenshots or GIFs -->
+
+| Desktop (Pygame) | Web (React) |
+|---|---|
+| ![Desktop gameplay — coming soon](docs/screenshots/desktop-gameplay.png) | ![Web gameplay — coming soon](docs/screenshots/web-gameplay.png) |
+| *Desktop gameplay — coming soon* | *Web gameplay — coming soon* |
+
 ## Game Overview
 
 Komikan is an asymmetric hunt game where:
