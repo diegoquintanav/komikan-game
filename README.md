@@ -2,6 +2,12 @@
 
 A digital implementation of Komikan, a traditional Mapuche board game from southern Chile and Argentina. This project includes both a Pygame desktop version and a modern web interface with REST API.
 
+## About the game
+
+Komikan is a traditional board game of the [Mapuche](https://en.wikipedia.org/wiki/Mapuche) people, originating from southern Chile and Argentina. It is an asymmetric hunt game — one player controls the **Pangui** (puma) and the other controls the **Pu Trewa** (dogs) — reflecting themes of hunting and cooperation that are central to Mapuche culture.
+
+This project is a digital adaptation created for educational and recreational purposes. The original game concept and rules are attributed to **Adrián Cheuque Pan**, a Mapuche educator and cultural advocate. Learn more about Komikan and its cultural context at [Adrián Cheuque Pan's website](https://adrian-cheuque-pan.jimdosite.com/).
+
 ## Features
 
 - **Pygame Desktop Version**: Traditional desktop game with visual interface
@@ -380,4 +386,4 @@ See [LICENSE](LICENSE) for details.
 
 ## Credits
 
-Based on the traditional Mapuche board game Komikan. Learn more at [Komikan on Adrián Cheuque Pan's website](https://adriancheuquepan.cl/komikan/).
+This project is based on the traditional Mapuche board game **Komikan**. Original game concept and cultural documentation by **Adrián Cheuque Pan** — [adrian-cheuque-pan.jimdosite.com](https://adrian-cheuque-pan.jimdosite.com/).
