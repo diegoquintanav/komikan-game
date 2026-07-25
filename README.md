@@ -35,7 +35,7 @@ Komikan is an asymmetric hunt game where:
 - **Board**: 5×8 grid with special disabled nodes and paths
 - **Objective**: North captures tokens, South traps the Puma
 
-See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
+See [docs/01-game-rules.md](docs/01-game-rules.md) for complete rules.
 
 ## Getting Started
 
@@ -171,6 +171,7 @@ curl http://localhost:8000/api/games/abc123/moves
 ### API Endpoints
 
 - `POST /api/games` - Create a new game
+- `POST /api/games/custom` - Create a game with custom starting positions
 - `GET /api/games/{game_id}` - Get current game state
 - `POST /api/games/{game_id}/moves` - Submit a move
 - `GET /api/games/{game_id}/moves` - Get move history
@@ -200,7 +201,7 @@ uv run pytest tests/ -v
 **Expected output:**
 
 ```
-=================== 84 passed, 1 skipped, 1 xfailed in 0.5s ===================
+================== 82 passed, 1 skipped, 1 xfailed in 0.5s ===================
 ```
 
 ### Testing the Backend/API
@@ -208,7 +209,7 @@ uv run pytest tests/ -v
 #### 1. Test Core Game Logic (Board, Players, Movement)
 
 ```bash
-pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
+uv run pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
 ```
 
 This tests:
@@ -222,7 +223,7 @@ This tests:
 #### 2. Test FastAPI Endpoints
 
 ```bash
-pytest tests/test_api.py -v
+uv run pytest tests/test_api.py -v
 ```
 
 This tests:
@@ -245,14 +246,9 @@ tests/test_api.py::test_concurrent_games PASSED
 #### 3. Run Specific Tests
 
 ```bash
-# Test only capture mechanics
-pytest tests/test_board.py::TestBoardCapture -v
-
-# Test only API game creation
-pytest tests/test_api.py::test_create_game -v
-
-# Test with detailed output
-pytest tests/test_api.py -v -s
+uv run pytest tests/test_board.py::TestBoardCapture -v  # Test only capture mechanics
+uv run pytest tests/test_api.py::test_create_game -v    # Test only API game creation
+uv run pytest tests/test_api.py -v -s                   # Test with detailed output
 ```
 
 ### Testing the Frontend (React)
@@ -340,7 +336,7 @@ komikan-game/
 │   ├── test_performance.py   # Performance benchmarks
 │   └── test_example.py       # Testing patterns template
 ├── docs/                     # Documentation
-│   ├── GAME_RULES.md         # Complete game rules
+│   ├── 01-game-rules.md      # Complete game rules
 │   └── adr/                  # Architecture Decision Records
 └── openspec/                 # SDD change artifacts
 ```

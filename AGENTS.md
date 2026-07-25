@@ -36,7 +36,7 @@ uv run komikan-api                                # FastAPI dev server (port 800
 # or explicitly:
 uv run python -m uvicorn komikan.api.main:app --reload --host 0.0.0.0 --port 8000
 
-uv run pytest tests/ -v                           # all tests (~84 pass, 1 skip, 1 xfail)
+uv run pytest tests/ -v                           # all tests (82 pass, 1 skip, 1 xfail)
 uv run pytest tests/test_board.py::TestBoardCapture -v   # single class
 uv run pytest tests/test_api.py::test_create_game -v     # single function
 uv run pytest -m "not performance"                # skip slow benchmarks
@@ -92,17 +92,13 @@ docker-compose up  # backend :8000, frontend :5173, API docs :8000/docs
 - **`pytest.ini` uses `--strict-markers`** — any undeclared marker causes a hard error. Declared markers: `slow`, `integration`, `performance`.
 - **API tests** (`test_api.py`) use `httpx` + FastAPI `TestClient` — no live server needed.
 - **Pygame tests** require a display; on headless environments, skip or mock `run.py`-dependent tests.
-- **No CI pipeline** — pre-commit hooks are the only automated quality gate.
+- **CI pipeline** (`.github/workflows/ci.yml`): runs on push/PR to `main` — backend (uv sync, pytest, ruff check, ruff format --check) and frontend (npm ci, npm run build, npm run lint).
 
 ---
 
 ## Roadmap / agent tasks
 
-`agent-roadmap/` contains numbered markdown files for incremental MCP server conversion. Use them sequentially via:
-
-```bash
-gh agent-task create -F agent-roadmap/<file>.md
-```
+`openspec/` contains change artifacts (specs, proposals, tasks) for feature development. Use the OpenSpec skills to work through changes.
 
 ---
 
@@ -134,6 +130,6 @@ gh agent-task create -F agent-roadmap/<file>.md
 
 ## Key references
 
-- Game rules: `docs/GAME_RULES.md`
+- Game rules: `docs/01-game-rules.md`
 - Architecture Decision Records: `docs/adr/`
 - Version bumping: `cz bump` (generates changelog, PEP 440 versioning via Commitizen)
