@@ -162,7 +162,7 @@ class KomikanAgent:
             if current_player == self.side:
                 self.play_turn()
             else:
-                break
+                continue
 
         game_state = self._fetch_game_state()
         return str(game_state.get("status", "unknown"))
