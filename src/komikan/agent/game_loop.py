@@ -1,64 +1,83 @@
-"""Game loop for Komikan AI agent.
+"""Game loop orchestrator for LLM agent vs random opponent via REST API."""
 
-Orchestrates turns between LLM-based or random-bot players.
-"""
+from __future__ import annotations
 
-from komikan.agent.bot import BotProtocol, Move
+import logging
+from typing import Any
+
+from komikan.agent.agent import KomikanAgent
+from komikan.agent.opponent import Opponent
+
+logger = logging.getLogger(__name__)
 
 
-def game_loop(game, bot: BotProtocol, max_turns: int = 200) -> dict:
-    """Run a complete game with a bot making moves.
-
-    Args:
-        game: GameInstance with initial state.
-        bot: Bot implementation that chooses moves.
-        max_turns: Safety limit to prevent infinite games.
+def agent_game_loop(
+    agent: KomikanAgent,
+    opponent: Opponent,
+    max_turns: int = 200,
+) -> str:
+    """Run a game loop with the LLM agent playing against an opponent.
 
     Returns:
-        Dict with 'winner', 'moves_played', and 'reason' keys.
+        The final game status string (e.g. "north_won", "south_won", "stalemate").
     """
+    for _ in range(max_turns):
+        game_state = agent._fetch_game_state()
+        status = str(game_state.get("status", "unknown"))
+
+        if status != "in_progress":
+            return status
+
+        current_player = str(game_state.get("current_player", ""))
+
+        if current_player == agent.side:
+            result = agent.play_turn()
+            if result and result.get("status") and result["status"] != "in_progress":
+                return str(result["status"])
+        else:
+            move = opponent.choose_move()
+            if move:
+                agent._execute_move(move)
+
+    return status
+
+
+# ---------------------------------------------------------------------------
+# Backward-compat alias (used by old cli.py and tests; removed in Phase 4)
+# ---------------------------------------------------------------------------
+
+
+def game_loop(game: Any, bot: Any, max_turns: int = 200) -> dict[str, Any]:
+    """Legacy game loop using in-memory Game objects and Bot objects."""
     moves_played = 0
+    reason = "normal"
 
     for _ in range(max_turns):
-        # Check if game is over
-        if game.status.value != "active":
+        status_value = getattr(getattr(game, "status", None), "value", "unknown")
+
+        if status_value != "active":
+            reason = status_value
             break
 
         try:
-            move: Move = bot.choose_move(game)
-        except ValueError:
-            # No valid moves — game over
+            move = bot.choose_move()
+            success, error_msg = game.make_move(move)
+        except ValueError as e:
+            reason = str(e)
             break
 
-        # Execute the move via the game manager
-        success, _ = game.make_move(
-            move.from_position[0],
-            move.from_position[1],
-            move.to_position[0],
-            move.to_position[1],
-        )
-
         if not success:
+            reason = error_msg
             break
 
         moves_played += 1
 
+    final_status = getattr(getattr(game, "status", None), "value", "unknown")
+    if moves_played >= max_turns and final_status == "active":
+        reason = "max_turns_reached"
+
     return {
-        "winner": game.status.value,
+        "winner": final_status,
         "moves_played": moves_played,
-        "reason": _resolve_reason(game),
+        "reason": reason,
     }
-
-
-def _resolve_reason(game) -> str:
-    """Determine why the game ended."""
-    status = game.status.value
-    if status == "active":
-        return "max_turns_reached"
-    elif status == "north_won":
-        return "north_captured_enough"
-    elif status == "south_won":
-        return "south_trapped_north"
-    elif status == "stalemate":
-        return "stalemate"
-    return "unknown"

@@ -1,41 +1,63 @@
 """CLI entry point for Komikan AI agent games.
 
 Usage:
-    komikan-cli [--north <player>] [--south <player>] [--delay <seconds>]
-
-Player types: human, random, llm
+    komikan-agent [--provider openai|anthropic] [--model MODEL] [--side north|south]
+                  [--opponent human|random] [--delay SECONDS] [--base-url URL]
 """
+
+from __future__ import annotations
 
 import argparse
 import time
 
-from komikan.agent.bot import RandomBot, Move
-from komikan.agent.prompts import format_game_state, parse_llm_move
+import httpx
+
+
+DEFAULT_MODELS = {
+    "openai": "gpt-4o",
+    "anthropic": "claude-sonnet-4-20250514",
+}
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        prog="komikan-cli",
-        description="Play Komikan from the command line",
+        prog="komikan-agent",
+        description="Play Komikan with an LLM agent via the REST API",
     )
     parser.add_argument(
-        "--north",
-        default="human",
-        choices=["human", "random", "llm"],
-        help="Player type for north (default: human)",
+        "--provider",
+        default="openai",
+        choices=["openai", "anthropic"],
+        help="LLM provider (default: openai)",
     )
     parser.add_argument(
-        "--south",
-        default="human",
-        choices=["human", "random", "llm"],
-        help="Player type for south (default: human)",
+        "--model",
+        default=None,
+        help="Model name (default: gpt-4o for openai, claude-sonnet-4-20250514 for anthropic)",
+    )
+    parser.add_argument(
+        "--side",
+        default="north",
+        choices=["north", "south"],
+        help="Side the agent plays (default: north)",
+    )
+    parser.add_argument(
+        "--opponent",
+        default="random",
+        choices=["human", "random"],
+        help="Opponent type (default: random)",
     )
     parser.add_argument(
         "--delay",
         type=float,
-        default=0,
-        help="Delay in seconds between moves (default: 0)",
+        default=0.5,
+        help="Delay in seconds between moves (default: 0.5)",
+    )
+    parser.add_argument(
+        "--base-url",
+        default="http://localhost:8000",
+        help="Backend server URL (default: http://localhost:8000)",
     )
     return parser.parse_args(argv)
 
@@ -44,198 +66,90 @@ def print_banner() -> None:
     """Print the game banner."""
     print("=" * 40)
     print("  KOMIKAN - Mapuche Hunt Game")
+    print("  LLM Agent Mode")
     print("=" * 40)
 
 
-def print_board(game) -> None:
-    """Print the current board state."""
-    width = game.board_width
-    height = game.board_height
+def print_board(game_state: dict) -> None:
+    """Print the current board state from an API game state dict."""
+    north = game_state.get("north_player", {})
+    south = game_state.get("south_player", {})
 
-    # Build a grid
-    grid = [["." for _ in range(width)] for _ in range(height)]
-
-    for player in game.core_state.players:
-        symbol = "N" if player.side.value == "pangui" else "S"
-        for pos in player.positions:
-            x, y = pos
-            if 0 <= y < height and 0 <= x < width:
-                grid[y][x] = symbol
+    north_positions = set(tuple(p) for p in north.get("positions", []))
+    south_positions = set(tuple(p) for p in south.get("positions", []))
 
     print()
-    for y in range(height):
-        row_str = " ".join(grid[y])
-        print(f"  {y}: {row_str}")
+    for y in range(8):
+        row = []
+        for x in range(5):
+            if (x, y) in north_positions:
+                row.append("N")
+            elif (x, y) in south_positions:
+                row.append("S")
+            else:
+                row.append(".")
+        print(f"  {y}: {' '.join(row)}")
     print()
 
 
-def get_human_move(game) -> Move | None:
-    """Get a move from human input.
+def print_game_info(game_state: dict) -> None:
+    """Print current game metadata."""
+    status = game_state.get("status", "unknown")
+    current = game_state.get("current_player", "unknown")
+    move_count = game_state.get("move_count", 0)
+    north_count = game_state.get("north_player", {}).get("token_count", 0)
+    south_count = game_state.get("south_player", {}).get("token_count", 0)
+    print(f"  Status: {status} | Turn: {current} | Move #{move_count}")
+    print(f"  North tokens: {north_count} | South tokens: {south_count}")
 
-    Returns:
-        Move parsed from user input, or None on error.
-    """
-    current_player = game.core_state.current_player
-    positions = current_player.positions
 
-    prompt_parts = []
-    for pos in positions:
-        fx, fy = pos
-        valid_moves, valid_captures = game.get_valid_moves(fx, fy)
-        for m in valid_moves:
-            prompt_parts.append(f"  {fx},{fy} -> {m.x},{m.y}")
-        for to_pos, cap_pos in valid_captures:
-            prompt_parts.append(f"  {fx},{fy} -> {to_pos.x},{to_pos.y} (capture)")
+def fetch_game_state(client: httpx.Client, game_id: str) -> dict:
+    """Fetch the current game state from the API."""
+    resp = client.get(f"/api/games/{game_id}")
+    resp.raise_for_status()
+    data = resp.json()
+    return data.get("game", data)
 
-    if not prompt_parts:
+
+def create_game(client: httpx.Client) -> str:
+    """Create a new game via the API and return the game_id."""
+    resp = client.post("/api/games")
+    resp.raise_for_status()
+    data = resp.json()
+    game = data.get("game", data)
+    return game["game_id"]
+
+
+def play_random_move(client: httpx.Client, game_id: str) -> dict | None:
+    """Pick and execute a random legal move via the API. Returns the new game state or None."""
+    resp = client.get(f"/api/games/{game_id}/all-valid-moves")
+    resp.raise_for_status()
+    data = resp.json()
+
+    tokens = data.get("tokens", [])
+    all_moves: list[dict] = []
+
+    for token in tokens:
+        from_x, from_y = token["position"]
+        for m in token.get("moves", []):
+            to_x, to_y = m["to"]
+            all_moves.append({
+                "from_x": from_x,
+                "from_y": from_y,
+                "to_x": to_x,
+                "to_y": to_y,
+            })
+
+    if not all_moves:
         return None
 
-    print("Available moves:")
-    for part in prompt_parts:
-        print(part)
+    import random
 
-    while True:
-        try:
-            raw = input("Your move (from_x,from_y to_x,to_y): ").strip()
-        except (EOFError, KeyboardInterrupt):
-            print()
-            return None
-
-        if not raw:
-            continue
-
-        parts = raw.replace("->", " ").split()
-        if len(parts) != 2:
-            print("Invalid format. Use: from_x,from_y to_x,to_y")
-            continue
-
-        try:
-            from_parts = parts[0].split(",")
-            to_parts = parts[1].split(",")
-            from_pos = (int(from_parts[0]), int(from_parts[1]))
-            to_pos = (int(to_parts[0]), int(to_parts[1]))
-        except (ValueError, IndexError):
-            print("Invalid numbers. Use: from_x,from_y to_x,to_y")
-            continue
-
-        # Validate this move exists
-        is_valid = False
-        is_capture = False
-        for m in game.get_valid_moves(from_pos[0], from_pos[1])[0]:
-            if (m.x, m.y) == to_pos:
-                is_valid = True
-                break
-        if not is_valid:
-            for to_p, cap_p in game.get_valid_moves(from_pos[0], from_pos[1])[1]:
-                if (to_p.x, to_p.y) == to_pos:
-                    is_valid = True
-                    is_capture = True
-                    break
-
-        if not is_valid:
-            print("Invalid move. Check available moves and try again.")
-            continue
-
-        return Move(
-            from_position=from_pos,
-            to_position=to_pos,
-            is_capture=is_capture,
-        )
-
-
-def get_random_move(game) -> Move | None:
-    """Get a move from the random bot.
-
-    Returns:
-        Random Move, or None if no moves available.
-    """
-    bot = RandomBot()
-    try:
-        return bot.choose_move(game)
-    except ValueError:
-        return None
-
-
-def get_llm_move(game, llm_provider) -> Move | None:
-    """Get a move from the LLM provider with 3 retries.
-
-    Args:
-        game: GameInstance.
-        llm_provider: LLM provider with chat() method.
-
-    Returns:
-        Move parsed from LLM response, or random fallback.
-    """
-    _current_player = game.core_state.current_player
-    prompt = format_game_state(game)
-
-    for attempt in range(3):
-        try:
-            response = llm_provider.chat([{"role": "user", "content": prompt}])
-            valid_moves = _build_valid_moves_list(game)
-            parsed = parse_llm_move(response, valid_moves)
-            if parsed is not None:
-                from_pos = tuple(parsed["from"])
-                to_pos = tuple(parsed["to"])
-                # Determine if capture
-                is_capture = False
-                for to_p, cap_p in game.get_valid_moves(from_pos[0], from_pos[1])[1]:
-                    if (to_p.x, to_p.y) == to_pos:
-                        is_capture = True
-                        break
-                print(
-                    f"  LLM chose: ({from_pos[0]},{from_pos[1]}) -> ({to_pos[0]},{to_pos[1]})"
-                )
-                return Move(
-                    from_position=from_pos,
-                    to_position=to_pos,
-                    is_capture=is_capture,
-                )
-        except Exception as e:
-            print(f"  LLM attempt {attempt + 1} failed: {e}")
-
-    # Fallback to random
-    print("  LLM failed after 3 attempts, falling back to random")
-    return get_random_move(game)
-
-
-def _build_valid_moves_list(game) -> list[dict]:
-    """Build a list of valid moves as dicts for parse_llm_move."""
-    current_player = game.core_state.current_player
-    moves = []
-    for pos in current_player.positions:
-        fx, fy = pos
-        valid_advances, valid_captures = game.get_valid_moves(fx, fy)
-        for m in valid_advances:
-            moves.append(
-                {"type": "advance", "to": [m.x, m.y], "description": "advance"}
-            )
-        for to_pos, cap_pos in valid_captures:
-            moves.append(
-                {
-                    "type": "capture",
-                    "to": [to_pos.x, to_pos.y],
-                    "description": f"capture over ({cap_pos.x},{cap_pos.y})",
-                }
-            )
-    return moves
-
-
-def create_player(player_type: str, game):
-    """Create a player function based on type.
-
-    Returns:
-        A callable that takes a game and returns a Move or None.
-    """
-    if player_type == "random":
-        return get_random_move
-    elif player_type == "llm":
-        from komikan.llm import LLMProvider
-
-        provider = LLMProvider("openai")
-        return lambda g: get_llm_move(g, provider)
-    else:
-        return get_human_move
+    move = random.choice(all_moves)
+    move_resp = client.post(f"/api/games/{game_id}/moves", json=move)
+    move_resp.raise_for_status()
+    result = move_resp.json()
+    return result.get("game", result)
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -244,50 +158,161 @@ def main(argv: list[str] | None = None) -> None:
 
     print_banner()
 
-    # Import game setup
-    from komikan.game import KomikanGame
-
-    game = KomikanGame()
-
-    player_factories = {
-        "north": create_player(args.north, game),
-        "south": create_player(args.south, game),
-    }
-
-    print(f"North: {args.north} | South: {args.south}")
+    model = args.model or DEFAULT_MODELS[args.provider]
+    print(f"  Provider: {args.provider} | Model: {model}")
+    print(f"  Agent plays: {args.side} | Opponent: {args.opponent}")
     print()
 
-    while game.status.value == "active":
-        print_board(game)
+    # Resolve API keys
+    import os
 
-        current_side = game.core_state.current_player.side.value
-        if current_side == "pangui":
-            player_fn = player_factories["north"]
-        else:
-            player_fn = player_factories["south"]
+    if args.provider == "openai":
+        api_key = os.environ.get("OPENAI_API_KEY", "")
+        if not api_key:
+            print("Error: OPENAI_API_KEY environment variable is not set.")
+            return
+    else:
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            print("Error: ANTHROPIC_API_KEY environment variable is not set.")
+            return
 
-        move = player_fn(game)
-        if move is None:
-            print(f"No valid moves for {current_side}. Game over.")
+    # Create provider
+    from komikan.agent.factory import create_provider
+
+    provider = create_provider(args.provider, api_key=api_key, model=model)
+
+    # Connect to API and create game
+    client = httpx.Client(base_url=args.base_url.rstrip("/"), timeout=10.0)
+
+    try:
+        client.get("/").raise_for_status()
+    except httpx.ConnectError:
+        print(f"Error: Cannot connect to API server at {args.base_url}")
+        print("Start the server with: komikan-api")
+        return
+
+    game_id = create_game(client)
+    print(f"  Game created: {game_id}")
+    print()
+
+    # Create agent
+    from komikan.agent.agent import KomikanAgent
+
+    agent = KomikanAgent(
+        provider=provider,
+        base_url=args.base_url,
+        game_id=game_id,
+        side=args.side,
+    )
+
+    # Game loop
+    max_turns = 200
+    for turn in range(max_turns):
+        game_state = fetch_game_state(client, game_id)
+        status = game_state.get("status", "unknown")
+
+        if status != "in_progress":
             break
 
-        success, msg = game.make_move(
-            move.from_position[0],
-            move.from_position[1],
-            move.to_position[0],
-            move.to_position[1],
-        )
+        current_player = game_state.get("current_player", "")
+        move_count = game_state.get("move_count", 0)
 
-        if not success:
-            print(f"Move failed: {msg}")
-            continue
+        print(f"--- Turn {move_count + 1} ---")
+        print_board(game_state)
+        print_game_info(game_state)
+
+        if current_player == args.side:
+            print(f"  Agent ({args.provider}/{model}) is thinking...")
+            result = agent.play_turn()
+
+            if result is None:
+                print("  Agent could not play (not its turn).")
+                continue
+
+            new_status = result.get("status", status)
+            if new_status != "in_progress":
+                game_state = fetch_game_state(client, game_id)
+                print_board(game_state)
+                print(f"  Game over: {game_state.get('status', 'unknown')}")
+                break
+        else:
+            if args.opponent == "random":
+                print("  Opponent (random) is playing...")
+                play_random_move(client, game_id)
+            else:
+                print("  Human opponent — enter your move.")
+                _play_human_turn(client, game_id)
 
         if args.delay > 0:
             time.sleep(args.delay)
 
     # Final state
-    print_board(game)
-    print(f"Game over! Winner: {game.status.value}")
+    game_state = fetch_game_state(client, game_id)
+    final_status = game_state.get("status", "unknown")
+    print_board(game_state)
+    print_game_info(game_state)
+    print(f"Game over! Result: {final_status}")
+
+    client.close()
+
+
+def _play_human_turn(client: httpx.Client, game_id: str) -> None:
+    """Prompt human for a move and execute it via the API."""
+    resp = client.get(f"/api/games/{game_id}/all-valid-moves")
+    resp.raise_for_status()
+    data = resp.json()
+
+    tokens = data.get("tokens", [])
+    all_moves: list[tuple[tuple[int, int], tuple[int, int]]] = []
+
+    print("  Available moves:")
+    for token in tokens:
+        from_x, from_y = token["position"]
+        for m in token.get("moves", []):
+            to_x, to_y = m["to"]
+            print(f"    {from_x},{from_y} -> {to_x},{to_y}")
+            all_moves.append(((from_x, from_y), (to_x, to_y)))
+        for m in token.get("moves", []):
+            pass  # already printed
+
+    while True:
+        try:
+            raw = input("  Your move (from_x,from_y to_x,to_y): ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print()
+            return
+
+        if not raw:
+            continue
+
+        parts = raw.replace("->", " ").split()
+        if len(parts) != 2:
+            print("  Invalid format. Use: from_x,from_y to_x,to_y")
+            continue
+
+        try:
+            from_parts = parts[0].split(",")
+            to_parts = parts[1].split(",")
+            from_pos = (int(from_parts[0]), int(from_parts[1]))
+            to_pos = (int(to_parts[0]), int(to_parts[1]))
+        except (ValueError, IndexError):
+            print("  Invalid numbers. Use: from_x,from_y to_x,to_y")
+            continue
+
+        if (from_pos, to_pos) in all_moves:
+            move = {
+                "from_x": from_pos[0],
+                "from_y": from_pos[1],
+                "to_x": to_pos[0],
+                "to_y": to_pos[1],
+            }
+            move_resp = client.post(f"/api/games/{game_id}/moves", json=move)
+            if move_resp.status_code == 200:
+                break
+            print(f"  Move rejected: {move_resp.json().get('detail', 'unknown error')}")
+        else:
+            print("  Invalid move. Check available moves and try again.")
 
 
 if __name__ == "__main__":

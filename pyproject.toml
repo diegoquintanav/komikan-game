@@ -31,7 +31,7 @@ dev = [
 [project.scripts]
 komikan = "komikan.run:main"
 komikan-api = "komikan.api.main:main"
-komikan-cli = "komikan.cli:main"
+komikan-agent = "komikan.cli:main"
 
 [build-system]
 build-backend = "uv_build"

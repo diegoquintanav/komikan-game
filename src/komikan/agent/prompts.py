@@ -1,94 +1,140 @@
-"""Prompt formatting and LLM response parsing for Komikan agent."""
+"""Prompt formatting for LLM game state and move lists."""
 
-import json
+from __future__ import annotations
+
 import re
 from typing import Any
 
 
-def format_game_state(game) -> str:
-    """Format the current game state into a prompt for the LLM.
-
-    Args:
-        game: GameInstance with current game state.
-
-    Returns:
-        A string prompt describing the board and available moves.
-    """
-    current_player = game.core_state.current_player
-    side_name = current_player.side.value
-    token_count = len(current_player.positions)
-    status = game.status.value
+def format_game_state_prompt(game_state: dict[str, object]) -> str:
+    """Format game state as a structured prompt for the LLM."""
+    board = game_state.get("board", {})
+    current_player = game_state.get("current_player", "unknown")
+    move_count = game_state.get("move_count", 0)
+    status = game_state.get("status", "unknown")
+    north_captures = game_state.get("north_captures", 0)
+    south_tokens = game_state.get("south_tokens_remaining", 12)
 
     lines = [
-        f"You are playing Komikan as {side_name} ({token_count} token{'s' if token_count != 1 else ''}).",
-        f"Game status: {status}.",
+        f"Current player: {current_player}",
+        f"Move count: {move_count}",
+        f"Game status: {status}",
+        f"North captures: {north_captures}",
+        f"South tokens remaining: {south_tokens}",
         "",
-        "Your tokens and their available moves:",
+        "Board positions (x,y -> side):",
     ]
 
-    for pos in current_player.positions:
-        from_x, from_y = pos
-        valid_moves, valid_captures = game.get_valid_moves(from_x, from_y)
-
-        move_strs = []
-        for move in valid_moves:
-            move_strs.append(f"advance to ({move.x},{move.y})")
-        for to_pos, cap_pos in valid_captures:
-            move_strs.append(
-                f"capture from ({from_x},{from_y}) over ({cap_pos.x},{cap_pos.y}) to ({to_pos.x},{to_pos.y})"
-            )
-
-        if move_strs:
-            lines.append(f"  Token at ({from_x},{from_y}): {'; '.join(move_strs)}")
-        else:
-            lines.append(f"  Token at ({from_x},{from_y}): no valid moves")
-
-    lines.extend(
-        [
-            "",
-            "Choose ONE move. Respond with EXACTLY this format:",
-            "  from (x1,y1) to (x2,y2)",
-            "For captures, append 'capture' at the end.",
-            "Do not include any other text.",
-        ]
-    )
+    if board:
+        for pos, side in sorted(board.items(), key=lambda item: (int(item[0].split(",")[1]), int(item[0].split(",")[0]))):
+            lines.append(f"  {pos} -> {side}")
+    else:
+        lines.append("  (empty board)")
 
     return "\n".join(lines)
 
 
-def parse_llm_move(
-    response: str, valid_moves: list[dict[str, Any]]
-) -> dict[str, Any] | None:
-    """Parse an LLM response string into a move dict.
+def format_move_list(tokens: list[dict[str, object]]) -> str:
+    """Format the valid moves list for the LLM prompt."""
+    if not tokens:
+        return "No valid moves available."
 
-    Args:
-        response: Raw LLM response text.
-        valid_moves: List of valid move dicts with 'to' field.
+    lines = ["Valid moves:"]
 
-    Returns:
-        A dict with 'from' and 'to' keys, or None if parsing fails.
-    """
-    # Try JSON format first
+    for token in tokens:
+        from_pos = token["from"]
+        from_str = f"({from_pos[0]},{from_pos[1]})"
+
+        moves = token.get("moves", [])
+        captures = token.get("captures", [])
+
+        if moves or captures:
+            lines.append(f"  Token at {from_str}:")
+            for m in moves:
+                lines.append(f"    -> move to ({m[0]},{m[1]})")
+            for capture in captures:
+                to_pos = capture[0]
+                captured_pos = capture[1]
+                lines.append(f"    -> capture at ({captured_pos[0]},{captured_pos[1]}) land on ({to_pos[0]},{to_pos[1]})")
+
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Backward-compat aliases (used by old cli.py; removed in Phase 4)
+# ---------------------------------------------------------------------------
+
+
+def format_game_state(game: Any) -> str:
+    """Legacy: format an in-memory GameInstance for the LLM (cli.py compat)."""
+    board_width = getattr(game, "board_width", 5)
+    board_height = getattr(game, "board_height", 8)
+    current_player = game.core_state.current_player
+    side_label = current_player.side.value
+
+    lines = [
+        f"Current player: {side_label}",
+        f"Move count: {getattr(game.core_state, 'move_count', 0)}",
+        f"Game status: {getattr(getattr(game, 'status', None), 'value', 'unknown')}",
+        "",
+        "Board:",
+    ]
+
+    grid = [["." for _ in range(board_width)] for _ in range(board_height)]
+    for player in game.core_state.players:
+        symbol = "N" if player.side.value == "pangui" else "S"
+        for pos in player.positions:
+            x, y = pos
+            if 0 <= y < board_height and 0 <= x < board_width:
+                grid[y][x] = symbol
+
+    for y in range(board_height):
+        lines.append(" ".join(grid[y]))
+
+    lines.append("")
+    lines.append("Valid moves (from position -> to position):")
+
+    for pos in current_player.positions:
+        fx, fy = pos
+        valid_moves, valid_captures = game.get_valid_moves(fx, fy)
+        for m in valid_moves:
+            lines.append(f"  {fx},{fy} -> {m.x},{m.y}")
+        for to_pos, _cap_pos in valid_captures:
+            lines.append(f"  {fx},{fy} -> {to_pos.x},{to_pos.y} (capture)")
+
+    return "\n".join(lines)
+
+
+def parse_llm_move(response: str, valid_moves: list[dict[str, object]]) -> dict[str, list[int]] | None:
+    """Legacy: parse an LLM text response into a move dict (cli.py compat)."""
+    if not response:
+        return None
+
+    # Try JSON format first: {"from": [2, 0], "to": [2, 1]}
+    import json
     try:
-        data = json.loads(response.strip())
-        if "from" in data and "to" in data:
-            if _move_in_valid_moves(data["to"], valid_moves):
-                return {"from": data["from"], "to": data["to"]}
+        data = json.loads(response)
+        if isinstance(data, dict) and "from" in data and "to" in data:
+            from_pos = data["from"]
+            to_pos = data["to"]
+            if isinstance(from_pos, list) and isinstance(to_pos, list):
+                for move in valid_moves:
+                    if move.get("to") == to_pos:
+                        return {"from": from_pos, "to": to_pos}
     except (json.JSONDecodeError, TypeError):
         pass
 
-    # Try text format: "from (x1,y1) to (x2,y2)"
-    pattern = r"from\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)\s*to\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)"
+    # Try text formats: "from (2,0) to (2,1)" or "2,0 -> 2,1" or "2,0 to 2,1"
+    pattern = r"(?:from\s*\(\s*)?(\d+)\s*,\s*(\d+)\s*\)?\s*(?:->|to)\s*(?:\(\s*)?(\d+)\s*,\s*(\d+)\s*\)?"
     match = re.search(pattern, response)
-    if match:
-        from_pos = [int(match.group(1)), int(match.group(2))]
-        to_pos = [int(match.group(3)), int(match.group(4))]
-        if _move_in_valid_moves(to_pos, valid_moves):
-            return {"from": from_pos, "to": to_pos}
+    if not match:
+        return None
+
+    from_x, from_y = int(match.group(1)), int(match.group(2))
+    to_x, to_y = int(match.group(3)), int(match.group(4))
+
+    for move in valid_moves:
+        if move.get("to") == [to_x, to_y]:
+            return {"from": [from_x, from_y], "to": [to_x, to_y]}
 
     return None
-
-
-def _move_in_valid_moves(to_pos: list[int], valid_moves: list[dict[str, Any]]) -> bool:
-    """Check if a target position exists in the list of valid moves."""
-    return any(m["to"] == to_pos for m in valid_moves)
