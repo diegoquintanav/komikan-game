@@ -1,3 +1,9 @@
+## v0.1.1 (2026-07-26)
+
+### Feat
+
+- add Pygame target to Makefile for running the desktop version
+
 ## v0.1.0 (2026-07-26)
 
 ### Feat
