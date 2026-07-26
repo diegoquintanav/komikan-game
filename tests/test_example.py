@@ -142,18 +142,7 @@ def test_example_integration_marked():
     pass
 
 
-# Skip a test conditionally
-@pytest.mark.skip(reason="Example of skipped test")
-def test_example_skipped():
-    """Example of a test that will be skipped."""
-    pass
 
-
-# Expected failure
-@pytest.mark.xfail(reason="Known issue - example")
-def test_example_expected_failure():
-    """Example of test expected to fail."""
-    assert False  # This failure is expected
 
 
 # How to add new test files:
