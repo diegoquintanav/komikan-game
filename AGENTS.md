@@ -12,7 +12,15 @@ The copilot-instructions file (`.github/copilot-instructions.md`) covers the Pyt
 
 ---
 
-## Project management and specification
+## Language conventions
+
+* Use english for all code, comments, and documentation, unless told otherwise
+* Don't use non-ASCII characters in code, comments, or documentation unless told otherwise
+* Use skills for testing your writing style against common AI style patterns (e.g., "avoid AI style" skill) to ensure your writing is human-like and not AI-generated
+
+---
+
+## Project management and specification conventions
 
 * This project uses [Linear](https://linear.app/) for issue tracking. All issues must be linked to a Linear ticket (e.g., ALMUD-123) in the commit message. 
 * The linear initiative for this project is <https://linear.app/almudata/initiative/komikan-game-66e620fd3b3e/overview>
@@ -30,15 +38,50 @@ The copilot-instructions file (`.github/copilot-instructions.md`) covers the Pyt
 
 ## Commit conventions
 
-* This project uses [commitizen](https://commitizen-tools.github.io/commitizen/) for changelog generation and versioning. All commits must follow the conventions in the `.cz.toml` file.
+* This project uses [commitizen](https://commitizen-tools.github.io/commitizen/) for changelog generation and versioning. All commits must follow Conventional Commits format as configured in `.cz.toml`.
+* **Accepted types**: `feat`, `fix`, `docs`, `test`, `ci`, `refactor`, `perf`, `chore`, `style`, `build`
+* **Scope** is optional. Example: `feat(api): add game session timeout`
+* **Semver mapping**: `feat` → MINOR, `fix`/`refactor`/`perf` → PATCH (major version is locked at 0.x)
+* **Bump auto-detection**: `cz bump` infers the increment from commit types since the last tag. No manual increment argument is required (but `--increment` can override).
 * All branches must follow the naming convention: `<github-username>/<ticket-number>-<short-description>` (e.g., `diegoquintanav/ALMUD-123-add-new-feature`).
 * All pull requests must be linked to a Linear ticket and must reference the ticket in the PR description.
 
 ---
+
 ## Releases conventions
 
 * This project uses [commitizen](https://commitizen-tools.github.io/commitizen/) for changelog generation and versioning. All releases must follow the conventions in the `.cz.toml` file.
 * All releases must be tagged with a version number in the format `vX.Y.Z` (e.g., `v0.1.0`).
+
+### Version file and sync locations
+
+`VERSION` is the source of truth. `cz bump` syncs it to three places:
+- `VERSION` — plain text file
+- `frontend/package.json` — `"version"` field
+- `src/komikan/__init__.py` — `__version__` string
+
+Always edit `VERSION` directly or use `cz bump`. Never edit the other two files manually.
+
+### Release workflow
+
+1. Ensure all changes are committed and pushed to `main`
+2. Bump version: `./scripts/bump-version.sh patch` (or `minor`, `major`, `release`)
+   - This runs `cz bump --changelog` which:
+     - Auto-detects increment from commit types since last tag
+     - Regenerates `CHANGELOG.md` using the custom Jinja2 template
+     - Runs `pre_bump_hooks` (converts `#N` references to PR links)
+     - Updates `VERSION`, `package.json`, and `__init__.py`
+     - Creates a git commit with message `bump: version X.Y.Z → A.B.C`
+     - Creates a `vX.Y.Z` tag
+   - The `release` argument also pushes the commit and tag
+3. CI (`.github/workflows/release.yml`) creates a GitHub Release from the tag
+
+### Changelog customization
+
+- **Template**: `CHANGELOG.md.jinja2` renders every entry with a clickable GitHub commit hash link
+- **PR linking**: `scripts/link-changelog.py` is a pre-bump hook that converts bare `#N` references in commit messages to GitHub pull request links
+- **Makefile**: `make changelog` regenerates the changelog and runs the linking script
+- CZ pre_bump_hooks run **only** during `cz bump --changelog`, not during standalone `cz changelog`
 
 ---
 
@@ -66,7 +109,7 @@ uv run komikan-api                                # FastAPI dev server (port 800
 # or explicitly:
 uv run python -m uvicorn komikan.api.main:app --reload --host 0.0.0.0 --port 8000
 
-uv run pytest tests/ -v                           # all tests (82 pass, 1 skip, 1 xfail)
+uv run pytest tests/ -v                           # all tests (220 pass)
 uv run pytest tests/test_board.py::TestBoardCapture -v   # single class
 uv run pytest tests/test_api.py::test_create_game -v     # single function
 uv run pytest -m "not performance"                # skip slow benchmarks
@@ -93,6 +136,21 @@ npm run preview    # preview production build
 ```bash
 docker compose up  # backend :8000, frontend :5173, API docs :8000/docs
 ```
+
+### Version management and releases
+
+```bash
+make changelog                          # regenerate CHANGELOG.md + add PR links
+make bump-patch                         # 0.1.0 → 0.1.1 (interactive, no push)
+make bump-minor                         # 0.1.0 → 0.2.0
+make bump-major                         # 0.1.0 → 1.0.0
+make release                            # bump + push commit + tag → CI creates GitHub Release
+
+# Or directly:
+./scripts/bump-version.sh patch         # same as make bump-patch
+./scripts/bump-version.sh release       # same as make release (bump + push + tag)
+uv run cz bump --increment patch --changelog  # raw cz (non-interactive)
+uv run cz changelog --unreleased-version 0.1.2  # regenerate without bumping
 
 ---
 
