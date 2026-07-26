@@ -1,3 +1,13 @@
+## v0.1.3 (2026-07-26)
+
+### Docs
+
+- update AGENTS.md with release workflow and changelog conventions ([`e9e67b9`](https://github.com/diegoquintanav/komikan-game/commit/e9e67b9e8bbdec8fe29228d3d17682fcd3d81e1a))
+
+### Chore
+
+- **pre-commit**: clean up code formatting and remove unnecessary lines in test files ([`129435b`](https://github.com/diegoquintanav/komikan-game/commit/129435b4ed15cf491bb320df2a9c52ee55e13ae1))
+
 ## v0.1.2 (2026-07-26)
 
 ### Feat
