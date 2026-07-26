@@ -34,6 +34,11 @@ The copilot-instructions file (`.github/copilot-instructions.md`) covers the Pyt
 * All branches must follow the naming convention: `<github-username>/<ticket-number>-<short-description>` (e.g., `diegoquintanav/ALMUD-123-add-new-feature`).
 * All pull requests must be linked to a Linear ticket and must reference the ticket in the PR description.
 
+---
+## Releases conventions
+
+* This project uses [commitizen](https://commitizen-tools.github.io/commitizen/) for changelog generation and versioning. All releases must follow the conventions in the `.cz.toml` file.
+* All releases must be tagged with a version number in the format `vX.Y.Z` (e.g., `v0.1.0`).
 
 ---
 

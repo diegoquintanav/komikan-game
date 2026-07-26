@@ -1,3 +1,9 @@
+## v0.1.2 (2026-07-26)
+
+### Feat
+
+- add commit hash and PR links to changelog entries ([`0ad353b`](https://github.com/diegoquintanav/komikan-game/commit/0ad353b177bde964cb5725fcbb6437b8fa83bdb8))
+
 ## v0.1.1 (2026-07-26)
 
 ### Feat
