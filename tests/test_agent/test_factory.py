@@ -7,6 +7,7 @@ from komikan.agent.provider import LLMProvider
 class TestProviderFactory:
     def test_import(self):
         from komikan.agent.factory import create_provider
+
         assert callable(create_provider)
 
     def test_creates_openai_provider(self):
@@ -21,7 +22,9 @@ class TestProviderFactory:
         from komikan.agent.factory import create_provider
         from komikan.agent.anthropic_provider import AnthropicProvider
 
-        provider = create_provider("anthropic", api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = create_provider(
+            "anthropic", api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         assert isinstance(provider, AnthropicProvider)
         assert isinstance(provider, LLMProvider)
 

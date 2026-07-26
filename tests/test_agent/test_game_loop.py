@@ -4,9 +4,16 @@ from unittest.mock import MagicMock
 from komikan.agent.game_loop import agent_game_loop
 
 
-def _make_game_state(status: str = "in_progress", current_player: str = "north", **extra):
+def _make_game_state(
+    status: str = "in_progress", current_player: str = "north", **extra
+):
     """Build a mock game state dict-like object."""
-    state = {"status": status, "current_player": current_player, "move_count": 0, "board": {}}
+    state = {
+        "status": status,
+        "current_player": current_player,
+        "move_count": 0,
+        "board": {},
+    }
     state.update(extra)
     mock = MagicMock()
     mock.get = lambda key, default=None: state.get(key, default)
@@ -38,7 +45,12 @@ class TestAgentGameLoop:
             return None
 
         mock_agent.play_turn.side_effect = agent_play
-        mock_opponent.choose_move.return_value = {"from_x": 0, "from_y": 5, "to_x": 0, "to_y": 6}
+        mock_opponent.choose_move.return_value = {
+            "from_x": 0,
+            "from_y": 5,
+            "to_x": 0,
+            "to_y": 6,
+        }
 
         def make_state(s):
             mock = MagicMock()
@@ -64,7 +76,12 @@ class TestAgentGameLoop:
         mock_agent.play_turn.return_value = None
 
         mock_opponent = MagicMock()
-        mock_opponent.choose_move.return_value = {"from_x": 0, "from_y": 5, "to_x": 0, "to_y": 6}
+        mock_opponent.choose_move.return_value = {
+            "from_x": 0,
+            "from_y": 5,
+            "to_x": 0,
+            "to_y": 6,
+        }
 
         call_order = []
 
@@ -102,7 +119,12 @@ class TestAgentGameLoop:
         mock_agent.play_turn.return_value = None
 
         mock_opponent = MagicMock()
-        mock_opponent.choose_move.return_value = {"from_x": 0, "from_y": 5, "to_x": 0, "to_y": 6}
+        mock_opponent.choose_move.return_value = {
+            "from_x": 0,
+            "from_y": 5,
+            "to_x": 0,
+            "to_y": 6,
+        }
 
         def make_state(s):
             mock = MagicMock()
@@ -140,7 +162,12 @@ class TestAgentGameLoop:
 
         mock_agent.play_turn.side_effect = play
         mock_opponent = MagicMock()
-        mock_opponent.choose_move.return_value = {"from_x": 0, "from_y": 5, "to_x": 0, "to_y": 6}
+        mock_opponent.choose_move.return_value = {
+            "from_x": 0,
+            "from_y": 5,
+            "to_x": 0,
+            "to_y": 6,
+        }
 
         def make_state(s):
             mock = MagicMock()

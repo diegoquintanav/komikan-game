@@ -74,7 +74,12 @@ class OpenAIProvider:
                 last_error = e
                 if _is_rate_limit(e) and attempt < MAX_RETRIES - 1:
                     delay = RETRY_BASE_DELAY * (2**attempt)
-                    logger.warning("Rate limited, retrying in %.1fs (attempt %d/%d)", delay, attempt + 1, MAX_RETRIES)
+                    logger.warning(
+                        "Rate limited, retrying in %.1fs (attempt %d/%d)",
+                        delay,
+                        attempt + 1,
+                        MAX_RETRIES,
+                    )
                     time.sleep(delay)
                     continue
                 raise

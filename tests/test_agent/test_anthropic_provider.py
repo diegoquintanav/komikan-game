@@ -8,11 +8,15 @@ from komikan.agent.provider import LLMProvider, ToolDefinition, LLMResponse
 class TestAnthropicProvider:
     def test_import(self):
         from komikan.agent.anthropic_provider import AnthropicProvider
+
         assert AnthropicProvider is not None
 
     def test_implements_protocol(self):
         from komikan.agent.anthropic_provider import AnthropicProvider
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         assert isinstance(provider, LLMProvider)
 
     def test_chat_returns_llm_response_text(self):
@@ -27,7 +31,9 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         resp = provider.chat(
@@ -58,17 +64,30 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "tool_use"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         resp = provider.chat(
             system_prompt="sys",
             user_prompt="usr",
-            tools=[ToolDefinition(name="make_move", description="Move", parameters={"type": "object", "properties": {}})],
+            tools=[
+                ToolDefinition(
+                    name="make_move",
+                    description="Move",
+                    parameters={"type": "object", "properties": {}},
+                )
+            ],
         )
         assert len(resp.tool_calls) == 1
         assert resp.tool_calls[0].name == "make_move"
-        assert resp.tool_calls[0].arguments == {"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}
+        assert resp.tool_calls[0].arguments == {
+            "from_x": 0,
+            "from_y": 1,
+            "to_x": 0,
+            "to_y": 2,
+        }
 
     def test_chat_multiple_tool_calls(self):
         from komikan.agent.anthropic_provider import AnthropicProvider
@@ -90,13 +109,21 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "tool_use"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         resp = provider.chat(
             system_prompt="sys",
             user_prompt="usr",
-            tools=[ToolDefinition(name="make_move", description="Move", parameters={"type": "object", "properties": {}})],
+            tools=[
+                ToolDefinition(
+                    name="make_move",
+                    description="Move",
+                    parameters={"type": "object", "properties": {}},
+                )
+            ],
         )
         assert len(resp.tool_calls) == 2
 
@@ -109,20 +136,28 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         tools = [
             ToolDefinition(
                 name="make_move",
                 description="Execute a move on the board",
-                parameters={"type": "object", "properties": {"from_x": {"type": "integer"}}, "required": ["from_x"]},
+                parameters={
+                    "type": "object",
+                    "properties": {"from_x": {"type": "integer"}},
+                    "required": ["from_x"],
+                },
             )
         ]
         provider.chat(system_prompt="sys", user_prompt="usr", tools=tools)
 
         call_kwargs = mock_client.messages.create.call_args
-        anthropic_tools = call_kwargs.kwargs.get("tools") or call_kwargs[1].get("tools", [])
+        anthropic_tools = call_kwargs.kwargs.get("tools") or call_kwargs[1].get(
+            "tools", []
+        )
         assert len(anthropic_tools) == 1
         assert anthropic_tools[0]["name"] == "make_move"
         assert anthropic_tools[0]["description"] == "Execute a move on the board"
@@ -137,7 +172,9 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-3-haiku-20240307")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-3-haiku-20240307"
+        )
         provider._client = mock_client
 
         provider.chat(system_prompt="sys", user_prompt="usr", tools=[])
@@ -153,12 +190,18 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
-        provider.chat(system_prompt="You are a player", user_prompt="Board: ...", tools=[])
+        provider.chat(
+            system_prompt="You are a player", user_prompt="Board: ...", tools=[]
+        )
         call_kwargs = mock_client.messages.create.call_args
-        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages", [])
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get(
+            "messages", []
+        )
         assert len(messages) == 1
         assert messages[0]["role"] == "user"
         assert messages[0]["content"] == "Board: ..."
@@ -174,7 +217,9 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         provider.chat(system_prompt="sys", user_prompt="usr", tools=[])
@@ -193,7 +238,9 @@ class TestAnthropicProvider:
         mock_response.stop_reason = "end_turn"
         mock_client.messages.create.return_value = mock_response
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
 
         resp = provider.chat(system_prompt="sys", user_prompt="usr", tools=[])
@@ -221,9 +268,15 @@ class TestAnthropicProviderRateLimit:
         mock_success_response.content = [mock_text]
         mock_success_response.stop_reason = "end_turn"
 
-        mock_client.messages.create.side_effect = [rate_limit_error, rate_limit_error, mock_success_response]
+        mock_client.messages.create.side_effect = [
+            rate_limit_error,
+            rate_limit_error,
+            mock_success_response,
+        ]
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
         resp = provider.chat(system_prompt="sys", user_prompt="usr", tools=[])
         assert resp.text == "done"
@@ -242,7 +295,9 @@ class TestAnthropicProviderRateLimit:
         )
         mock_client.messages.create.side_effect = rate_limit_error
 
-        provider = AnthropicProvider(api_key="sk-ant-test", model="claude-sonnet-4-20250514")
+        provider = AnthropicProvider(
+            api_key="sk-ant-test", model="claude-sonnet-4-20250514"
+        )
         provider._client = mock_client
         with pytest.raises(anthropic.RateLimitError):
             provider.chat(system_prompt="sys", user_prompt="usr", tools=[])

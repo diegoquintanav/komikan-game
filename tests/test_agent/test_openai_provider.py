@@ -8,10 +8,12 @@ from komikan.agent.provider import LLMProvider, ToolDefinition, LLMResponse
 class TestOpenAIProvider:
     def test_import(self):
         from komikan.agent.openai_provider import OpenAIProvider
+
         assert OpenAIProvider is not None
 
     def test_implements_protocol(self):
         from komikan.agent.openai_provider import OpenAIProvider
+
         provider = OpenAIProvider(api_key="sk-test", model="gpt-4o")
         assert isinstance(provider, LLMProvider)
 
@@ -50,7 +52,9 @@ class TestOpenAIProvider:
 
         mock_tool_call = MagicMock()
         mock_tool_call.function.name = "make_move"
-        mock_tool_call.function.arguments = '{"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}'
+        mock_tool_call.function.arguments = (
+            '{"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}'
+        )
         mock_message.tool_calls = [mock_tool_call]
         mock_message.content = None
         mock_choice.message = mock_message
@@ -63,11 +67,22 @@ class TestOpenAIProvider:
         resp = provider.chat(
             system_prompt="You are a Komikan player.",
             user_prompt="Current board state...",
-            tools=[ToolDefinition(name="make_move", description="Move", parameters={"type": "object", "properties": {}})],
+            tools=[
+                ToolDefinition(
+                    name="make_move",
+                    description="Move",
+                    parameters={"type": "object", "properties": {}},
+                )
+            ],
         )
         assert len(resp.tool_calls) == 1
         assert resp.tool_calls[0].name == "make_move"
-        assert resp.tool_calls[0].arguments == {"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}
+        assert resp.tool_calls[0].arguments == {
+            "from_x": 0,
+            "from_y": 1,
+            "to_x": 0,
+            "to_y": 2,
+        }
 
     def test_chat_converts_tool_definitions_to_openai_format(self):
         from komikan.agent.openai_provider import OpenAIProvider
@@ -89,13 +104,18 @@ class TestOpenAIProvider:
             ToolDefinition(
                 name="make_move",
                 description="Execute a move",
-                parameters={"type": "object", "properties": {"from_x": {"type": "integer"}}},
+                parameters={
+                    "type": "object",
+                    "properties": {"from_x": {"type": "integer"}},
+                },
             )
         ]
         provider.chat(system_prompt="sys", user_prompt="usr", tools=tools)
 
         call_kwargs = mock_client.chat.completions.create.call_args
-        openai_tools = call_kwargs.kwargs.get("tools") or call_kwargs[1].get("tools", [])
+        openai_tools = call_kwargs.kwargs.get("tools") or call_kwargs[1].get(
+            "tools", []
+        )
         assert len(openai_tools) == 1
         assert openai_tools[0]["type"] == "function"
         assert openai_tools[0]["function"]["name"] == "make_move"
@@ -136,9 +156,13 @@ class TestOpenAIProvider:
         provider = OpenAIProvider(api_key="sk-test", model="gpt-4o")
         provider._client = mock_client
 
-        provider.chat(system_prompt="You are a player", user_prompt="Board state: ...", tools=[])
+        provider.chat(
+            system_prompt="You are a player", user_prompt="Board state: ...", tools=[]
+        )
         call_kwargs = mock_client.chat.completions.create.call_args
-        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get("messages", [])
+        messages = call_kwargs.kwargs.get("messages") or call_kwargs[1].get(
+            "messages", []
+        )
         assert messages[0]["role"] == "system"
         assert messages[0]["content"] == "You are a player"
         assert messages[1]["role"] == "user"
@@ -206,7 +230,11 @@ class TestOpenAIProviderRateLimit:
         mock_choice.message = mock_message
         mock_success_response.choices = [mock_choice]
 
-        mock_client.chat.completions.create.side_effect = [rate_limit_error, rate_limit_error, mock_success_response]
+        mock_client.chat.completions.create.side_effect = [
+            rate_limit_error,
+            rate_limit_error,
+            mock_success_response,
+        ]
 
         provider = OpenAIProvider(api_key="sk-test", model="gpt-4o")
         provider._client = mock_client

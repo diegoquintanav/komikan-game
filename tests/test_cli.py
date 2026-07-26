@@ -81,14 +81,22 @@ class TestCLIParseArgs:
     def test_all_flags_combined(self):
         from komikan.cli import parse_args
 
-        args = parse_args([
-            "--provider", "anthropic",
-            "--model", "claude-opus-4-20250514",
-            "--side", "south",
-            "--opponent", "human",
-            "--delay", "2.0",
-            "--base-url", "http://prod:8080",
-        ])
+        args = parse_args(
+            [
+                "--provider",
+                "anthropic",
+                "--model",
+                "claude-opus-4-20250514",
+                "--side",
+                "south",
+                "--opponent",
+                "human",
+                "--delay",
+                "2.0",
+                "--base-url",
+                "http://prod:8080",
+            ]
+        )
         assert args.provider == "anthropic"
         assert args.model == "claude-opus-4-20250514"
         assert args.side == "south"
@@ -171,7 +179,9 @@ class TestCLIFetchGameState:
 
         mock_client = MagicMock(spec=httpx.Client)
         mock_resp = MagicMock()
-        mock_resp.json.return_value = {"game": {"status": "in_progress", "game_id": "x"}}
+        mock_resp.json.return_value = {
+            "game": {"status": "in_progress", "game_id": "x"}
+        }
         mock_resp.raise_for_status = MagicMock()
         mock_client.get.return_value = mock_resp
 
@@ -244,14 +254,6 @@ class TestCLIMainFlow:
 
         game_id = "test-game-001"
 
-        # Build response sequence for the httpx client
-        get_responses = {
-            "/": MagicMock(status_code=200),  # connectivity check
-            f"/api/games/{game_id}": _make_game_state_response(game_id, "in_progress", "north", 0),
-            f"/api/games/{game_id}/all-valid-moves": _make_valid_moves_response(),
-            f"/api/games/{game_id}": _make_game_state_response(game_id, "in_progress", "north", 1),
-        }
-
         call_count = 0
 
         def mock_get(url, **kwargs):
@@ -260,7 +262,9 @@ class TestCLIMainFlow:
             if url == "/":
                 return MagicMock(status_code=200)
             if url == f"/api/games/{game_id}":
-                return _make_game_state_response(game_id, "in_progress", "north", call_count)
+                return _make_game_state_response(
+                    game_id, "in_progress", "north", call_count
+                )
             if "/all-valid-moves" in url:
                 return _make_valid_moves_response()
             return MagicMock(status_code=200)
@@ -279,17 +283,21 @@ class TestCLIMainFlow:
             # execute move
             resp = MagicMock()
             resp.json.return_value = {
-                "game": _make_game_state_dict(game_id, "in_progress", "south", move_call_count)
+                "game": _make_game_state_dict(
+                    game_id, "in_progress", "south", move_call_count
+                )
             }
             resp.raise_for_status = MagicMock()
             return resp
 
         mock_provider = MagicMock()
         mock_provider.chat.return_value = MagicMock(
-            tool_calls=[MagicMock(
-                name="make_move",
-                arguments={"from_x": 2, "from_y": 0, "to_x": 2, "to_y": 1},
-            )],
+            tool_calls=[
+                MagicMock(
+                    name="make_move",
+                    arguments={"from_x": 2, "from_y": 0, "to_x": 2, "to_y": 1},
+                )
+            ],
             text=None,
         )
 
@@ -303,14 +311,27 @@ class TestCLIMainFlow:
                     client_instance.close = MagicMock()
                     MockClient.return_value = client_instance
 
-                    main(["--provider", "openai", "--side", "north", "--opponent", "random", "--delay", "0"])
+                    main(
+                        [
+                            "--provider",
+                            "openai",
+                            "--side",
+                            "north",
+                            "--opponent",
+                            "random",
+                            "--delay",
+                            "0",
+                        ]
+                    )
 
         captured = capsys.readouterr()
         assert "KOMIKAN" in captured.out
         assert "Game created" in captured.out
 
 
-def _make_game_state_dict(game_id: str, status: str, current_player: str, move_count: int) -> dict:
+def _make_game_state_dict(
+    game_id: str, status: str, current_player: str, move_count: int
+) -> dict:
     return {
         "game_id": game_id,
         "status": status,
@@ -321,9 +342,13 @@ def _make_game_state_dict(game_id: str, status: str, current_player: str, move_c
     }
 
 
-def _make_game_state_response(game_id: str, status: str, current_player: str, move_count: int):
+def _make_game_state_response(
+    game_id: str, status: str, current_player: str, move_count: int
+):
     resp = MagicMock()
-    resp.json.return_value = {"game": _make_game_state_dict(game_id, status, current_player, move_count)}
+    resp.json.return_value = {
+        "game": _make_game_state_dict(game_id, status, current_player, move_count)
+    }
     resp.raise_for_status = MagicMock()
     return resp
 

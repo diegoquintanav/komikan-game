@@ -59,10 +59,22 @@ KOMIKAN_TOOLS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "from_x": {"type": "integer", "description": "X coordinate of the token to move (0-4)"},
-                "from_y": {"type": "integer", "description": "Y coordinate of the token to move (0-7)"},
-                "to_x": {"type": "integer", "description": "X coordinate of the destination (0-4)"},
-                "to_y": {"type": "integer", "description": "Y coordinate of the destination (0-7)"},
+                "from_x": {
+                    "type": "integer",
+                    "description": "X coordinate of the token to move (0-4)",
+                },
+                "from_y": {
+                    "type": "integer",
+                    "description": "Y coordinate of the token to move (0-7)",
+                },
+                "to_x": {
+                    "type": "integer",
+                    "description": "X coordinate of the destination (0-4)",
+                },
+                "to_y": {
+                    "type": "integer",
+                    "description": "Y coordinate of the destination (0-7)",
+                },
             },
             "required": ["from_x", "from_y", "to_x", "to_y"],
         },

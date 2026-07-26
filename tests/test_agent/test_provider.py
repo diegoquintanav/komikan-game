@@ -13,7 +13,9 @@ from komikan.agent.provider import (
 
 class TestToolCall:
     def test_tool_call_creation(self):
-        tc = ToolCall(name="make_move", arguments={"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2})
+        tc = ToolCall(
+            name="make_move", arguments={"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}
+        )
         assert tc.name == "make_move"
         assert tc.arguments == {"from_x": 0, "from_y": 1, "to_x": 0, "to_y": 2}
 
@@ -62,7 +64,12 @@ class TestToolResult:
 class TestLLMResponse:
     def test_response_with_tool_call(self):
         resp = LLMResponse(
-            tool_calls=[ToolCall(name="make_move", arguments={"from_x": 0, "from_y": 0, "to_x": 1, "to_y": 1})],
+            tool_calls=[
+                ToolCall(
+                    name="make_move",
+                    arguments={"from_x": 0, "from_y": 0, "to_x": 1, "to_y": 1},
+                )
+            ],
             text=None,
         )
         assert len(resp.tool_calls) == 1
@@ -110,7 +117,9 @@ class TestLLMProviderProtocol:
 
     def test_custom_class_implements_protocol(self):
         class FakeProvider:
-            def chat(self, system_prompt: str, user_prompt: str, tools: list[ToolDefinition]) -> LLMResponse:
+            def chat(
+                self, system_prompt: str, user_prompt: str, tools: list[ToolDefinition]
+            ) -> LLMResponse:
                 return LLMResponse(tool_calls=[], text="ok")
 
         provider = FakeProvider()

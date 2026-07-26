@@ -26,7 +26,10 @@ def format_game_state_prompt(game_state: dict[str, object]) -> str:
     ]
 
     if board:
-        for pos, side in sorted(board.items(), key=lambda item: (int(item[0].split(",")[1]), int(item[0].split(",")[0]))):
+        for pos, side in sorted(
+            board.items(),
+            key=lambda item: (int(item[0].split(",")[1]), int(item[0].split(",")[0])),
+        ):
             lines.append(f"  {pos} -> {side}")
     else:
         lines.append("  (empty board)")
@@ -55,7 +58,9 @@ def format_move_list(tokens: list[dict[str, object]]) -> str:
             for capture in captures:
                 to_pos = capture[0]
                 captured_pos = capture[1]
-                lines.append(f"    -> capture at ({captured_pos[0]},{captured_pos[1]}) land on ({to_pos[0]},{to_pos[1]})")
+                lines.append(
+                    f"    -> capture at ({captured_pos[0]},{captured_pos[1]}) land on ({to_pos[0]},{to_pos[1]})"
+                )
 
     return "\n".join(lines)
 
@@ -105,13 +110,16 @@ def format_game_state(game: Any) -> str:
     return "\n".join(lines)
 
 
-def parse_llm_move(response: str, valid_moves: list[dict[str, object]]) -> dict[str, list[int]] | None:
+def parse_llm_move(
+    response: str, valid_moves: list[dict[str, object]]
+) -> dict[str, list[int]] | None:
     """Legacy: parse an LLM text response into a move dict (cli.py compat)."""
     if not response:
         return None
 
     # Try JSON format first: {"from": [2, 0], "to": [2, 1]}
     import json
+
     try:
         data = json.loads(response)
         if isinstance(data, dict) and "from" in data and "to" in data:

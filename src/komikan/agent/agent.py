@@ -54,7 +54,9 @@ class KomikanAgent:
         resp.raise_for_status()
         return resp.json()
 
-    def _is_valid_move(self, tool_call: ToolCall, valid_moves: list[dict[str, object]]) -> bool:
+    def _is_valid_move(
+        self, tool_call: ToolCall, valid_moves: list[dict[str, object]]
+    ) -> bool:
         args = tool_call.arguments
         from_x = args.get("from_x")
         from_y = args.get("from_y")
@@ -92,7 +94,9 @@ class KomikanAgent:
 
         prompt = format_game_state_prompt(game_state)
         move_list = format_move_list(valid_moves)
-        user_prompt = f"{prompt}\n\n{move_list}\n\nChoose a move using the make_move tool."
+        user_prompt = (
+            f"{prompt}\n\n{move_list}\n\nChoose a move using the make_move tool."
+        )
 
         for attempt in range(MAX_LLM_RETRIES):
             response = self._provider.chat(
@@ -113,22 +117,40 @@ class KomikanAgent:
                     result = self._execute_move(move)
                     return result.get("new_state", result)
 
-                logger.warning("LLM returned invalid move (attempt %d/%d): %s", attempt + 1, MAX_LLM_RETRIES, tool_call.arguments)
+                logger.warning(
+                    "LLM returned invalid move (attempt %d/%d): %s",
+                    attempt + 1,
+                    MAX_LLM_RETRIES,
+                    tool_call.arguments,
+                )
                 user_prompt += f"\n\nThe move {tool_call.arguments} is not valid. Here are the valid moves:\n{move_list}\n\nTry again."
 
-        logger.warning("LLM failed %d times, falling back to random legal move", MAX_LLM_RETRIES)
+        logger.warning(
+            "LLM failed %d times, falling back to random legal move", MAX_LLM_RETRIES
+        )
         return self._play_random_move(valid_moves)
 
-    def _play_random_move(self, valid_moves: list[dict[str, object]]) -> dict[str, object] | None:
+    def _play_random_move(
+        self, valid_moves: list[dict[str, object]]
+    ) -> dict[str, object] | None:
         """Execute a random legal move as fallback."""
         all_moves: list[dict[str, int]] = []
         for token in valid_moves:
             from_x, from_y = token["from"]
             for m in token.get("moves", []):
-                all_moves.append({"from_x": from_x, "from_y": from_y, "to_x": m[0], "to_y": m[1]})
+                all_moves.append(
+                    {"from_x": from_x, "from_y": from_y, "to_x": m[0], "to_y": m[1]}
+                )
             for capture in token.get("captures", []):
                 to_pos = capture[0]
-                all_moves.append({"from_x": from_x, "from_y": from_y, "to_x": to_pos[0], "to_y": to_pos[1]})
+                all_moves.append(
+                    {
+                        "from_x": from_x,
+                        "from_y": from_y,
+                        "to_x": to_pos[0],
+                        "to_y": to_pos[1],
+                    }
+                )
 
         if not all_moves:
             return None

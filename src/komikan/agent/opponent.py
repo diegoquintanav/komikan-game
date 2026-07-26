@@ -42,10 +42,19 @@ class RandomOpponent:
         for token in tokens:
             from_x, from_y = token["from"]
             for m in token.get("moves", []):
-                all_moves.append({"from_x": from_x, "from_y": from_y, "to_x": m[0], "to_y": m[1]})
+                all_moves.append(
+                    {"from_x": from_x, "from_y": from_y, "to_x": m[0], "to_y": m[1]}
+                )
             for capture in token.get("captures", []):
                 to_pos = capture[0]
-                all_moves.append({"from_x": from_x, "from_y": from_y, "to_x": to_pos[0], "to_y": to_pos[1]})
+                all_moves.append(
+                    {
+                        "from_x": from_x,
+                        "from_y": from_y,
+                        "to_x": to_pos[0],
+                        "to_y": to_pos[1],
+                    }
+                )
 
         move = random.choice(all_moves)
 

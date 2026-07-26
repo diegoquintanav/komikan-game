@@ -133,12 +133,14 @@ def play_random_move(client: httpx.Client, game_id: str) -> dict | None:
         from_x, from_y = token["position"]
         for m in token.get("moves", []):
             to_x, to_y = m["to"]
-            all_moves.append({
-                "from_x": from_x,
-                "from_y": from_y,
-                "to_x": to_x,
-                "to_y": to_y,
-            })
+            all_moves.append(
+                {
+                    "from_x": from_x,
+                    "from_y": from_y,
+                    "to_x": to_x,
+                    "to_y": to_y,
+                }
+            )
 
     if not all_moves:
         return None

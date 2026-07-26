@@ -80,7 +80,9 @@ class TestRandomOpponent:
         result = opponent.choose_move()
 
         assert result is not None
-        post_body = mock_api.post.call_args[1].get("json") or mock_api.post.call_args.kwargs.get("json")
+        post_body = mock_api.post.call_args[1].get(
+            "json"
+        ) or mock_api.post.call_args.kwargs.get("json")
         assert post_body is not None
         assert post_body["from_x"] == 2
         assert post_body["from_y"] == 5
