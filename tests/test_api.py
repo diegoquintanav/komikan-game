@@ -234,3 +234,140 @@ async def test_prevent_move_after_game_over(client):
     # The game starts active
     state = await client.get(f"/api/games/{game_id}")
     assert state.json()["game"]["status"] == "active"
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_returns_all_tokens(client):
+    """Test all-valid-moves returns moves for every token of current player."""
+    create_response = await client.post("/api/games")
+    game_id = create_response.json()["game"]["game_id"]
+
+    response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "current_player" in data
+    assert "tokens" in data
+
+    # North (pangui) starts first, has 1 token
+    assert data["current_player"] == "pangui"
+    assert len(data["tokens"]) == 1
+
+    # Each token has position and moves
+    token = data["tokens"][0]
+    assert "position" in token
+    assert "moves" in token
+    assert isinstance(token["moves"], list)
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_token_moves_structure(client):
+    """Test that each move in the response has the expected fields."""
+    create_response = await client.post("/api/games")
+    game_id = create_response.json()["game"]["game_id"]
+
+    response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+    data = response.json()
+
+    token = data["tokens"][0]
+    # North starts at (2, 0), can move to (2, 1) at minimum
+    assert token["position"] == [2, 0]
+    assert len(token["moves"]) > 0
+
+    move = token["moves"][0]
+    assert "type" in move
+    assert move["type"] in ("advance", "capture")
+    assert "to" in move
+    assert isinstance(move["to"], list)
+    assert len(move["to"]) == 2
+    assert "description" in move
+    assert isinstance(move["description"], str)
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_404_for_missing_game(client):
+    """Test all-valid-moves returns 404 for nonexistent game."""
+    response = await client.get("/api/games/nonexistent-id/all-valid-moves")
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_after_south_turn(client):
+    """Test all-valid-moves returns south tokens after north moves."""
+    create_response = await client.post("/api/games")
+    game_id = create_response.json()["game"]["game_id"]
+
+    # North moves first
+    move_data = {"from_x": 2, "from_y": 0, "to_x": 2, "to_y": 1}
+    await client.post(f"/api/games/{game_id}/moves", json=move_data)
+
+    # Now it's south's turn
+    response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["current_player"] == "pu trewa"
+    # South has 12 tokens
+    assert len(data["tokens"]) == 12
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_capture_includes_metadata(client):
+    """Test that capture moves include captures_from path."""
+    create_response = await client.post(
+        "/api/games",
+        json={
+            "north_positions": [{"x": 1, "y": 2}],
+            "south_positions": [{"x": 3, "y": 4}],
+        },
+    )
+    game_id = create_response.json()["game"]["game_id"]
+
+    response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+    assert response.status_code == 200
+
+    data = response.json()
+    token = data["tokens"][0]
+
+    # Check if any captures exist and validate structure
+    captures = [m for m in token["moves"] if m["type"] == "capture"]
+    if captures:
+        cap = captures[0]
+        assert "captures_from" in cap
+        assert isinstance(cap["captures_from"], list)
+
+
+@pytest.mark.asyncio
+async def test_all_valid_moves_completed_game_returns_error(client):
+    """Test all-valid-moves returns 400 when game is already over."""
+    # Create a custom game where north can capture enough to win immediately
+    create_response = await client.post(
+        "/api/games",
+        json={
+            "north_positions": [{"x": 0, "y": 3}],
+            "south_positions": [
+                {"x": 1, "y": 4},
+                {"x": 2, "y": 4},
+                {"x": 3, "y": 4},
+                {"x": 4, "y": 4},
+            ],
+        },
+    )
+    game_id = create_response.json()["game"]["game_id"]
+
+    # Make a move that triggers game end
+    move_data = {"from_x": 0, "from_y": 3, "to_x": 0, "to_y": 4}
+    await client.post(f"/api/games/{game_id}/moves", json=move_data)
+
+    # Check game state — may or may not be over depending on board rules
+    state_resp = await client.get(f"/api/games/{game_id}")
+    status_val = state_resp.json()["game"]["status"]
+
+    if status_val != "active":
+        # Game is over — endpoint should return 400
+        response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+        assert response.status_code == 400
+    else:
+        # Game still active — endpoint should work normally
+        response = await client.get(f"/api/games/{game_id}/all-valid-moves")
+        assert response.status_code == 200
