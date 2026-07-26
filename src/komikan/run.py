@@ -384,12 +384,59 @@ class GameRenderer:
 
     def draw_ui(self, game_state: GameState):
         """Draw game UI elements."""
-        # Current player indicator
-        player_text = f"Current Player: {game_state.current_player.side.value.title()}"
-        text_surface = self.font.render(
-            player_text, True, game_state.current_player.color
-        )
-        self.screen.blit(text_surface, (10, 10))
+        # Game over display
+        if game_state.game_over:
+            # Draw semi-transparent overlay
+            overlay = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+            overlay.set_alpha(128)
+            overlay.fill((0, 0, 0))
+            self.screen.blit(overlay, (0, 0))
+
+            # Get winner message
+            winner_message = game_state.winner_message
+
+            # Draw game over text
+            game_over_font = pygame.font.Font(None, 72)
+            winner_font = pygame.font.Font(None, 48)
+
+            game_over_text = game_over_font.render("GAME OVER!", True, (255, 255, 255))
+            winner_text = winner_font.render(winner_message, True, (255, 255, 0))
+            restart_text = self.font.render(
+                "Press any key to restart", True, (200, 200, 200)
+            )
+
+            # Center the text
+            game_over_rect = game_over_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 60)
+            )
+            winner_rect = winner_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)
+            )
+            restart_rect = restart_text.get_rect(
+                center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 60)
+            )
+
+            self.screen.blit(game_over_text, game_over_rect)
+            self.screen.blit(winner_text, winner_rect)
+            self.screen.blit(restart_text, restart_rect)
+        else:
+            # Current player indicator
+            player_text = (
+                f"Current Player: {game_state.current_player.side.value.title()}"
+            )
+            text_surface = self.font.render(
+                player_text, True, game_state.current_player.color
+            )
+            self.screen.blit(text_surface, (10, 10))
+
+            # Token count display
+            north_count = len(game_state.player_north.positions)
+            south_count = len(game_state.player_south.positions)
+            count_text = f"Tokens - North: {north_count} | South: {south_count}"
+            count_surface = pygame.font.Font(None, 28).render(
+                count_text, True, (100, 100, 100)
+            )
+            self.screen.blit(count_surface, (10, 40))
 
         # Instructions
         instructions = [
@@ -428,6 +475,24 @@ class Game:
         self.esc_timeout = 2000  # 2 seconds in milliseconds
 
         # Initialize player positions
+        self.setup_initial_positions()
+
+    def restart_game(self):
+        """Restart the game to initial state."""
+        # Reset game state
+        self.game_state.restart_game()
+
+        # Clear board
+        self.board = GameBoard()
+
+        # Reset UI state
+        self.selected_position = None
+        self.valid_moves = []
+
+        # Reset ESC tracking
+        self.esc_pressed_time = None
+
+        # Setup initial positions again
         self.setup_initial_positions()
 
     def setup_initial_positions(self):
@@ -533,8 +598,37 @@ class Game:
 
         return success, captured_player
 
+    def check_win_condition(self):
+        """Check for win conditions and handle game end."""
+        is_game_over, winner_message = self.game_state.check_win_condition(self.board)
+
+        if is_game_over and not self.game_state.game_over:
+            self.game_state.game_over = True
+            self.game_state.winner_message = winner_message
+
+            # Log the game end
+            if DEBUG_MODE:
+                logger.info("=== GAME ENDED ===")
+                logger.info(f"Winner: {winner_message}")
+                logger.info(
+                    f"Final positions - North: {len(self.game_state.player_north.positions)}, South: {len(self.game_state.player_south.positions)}"
+                )
+
+            # Print to console for immediate feedback
+            print("\\n🎉 GAME OVER! 🎉")
+            print(f"{winner_message}")
+            print(
+                f"Final token count - North: {len(self.game_state.player_north.positions)}, South: {len(self.game_state.player_south.positions)}"
+            )
+            print("Press ESC to exit or close the window.")
+
     def handle_click(self, pos: tuple[int, int], button: int):
         """Handle mouse click events."""
+        # Restart game if game is over
+        if self.game_state.game_over:
+            self.restart_game()
+            return
+
         board_x, board_y = self.renderer.get_board_pos_from_screen(pos[0], pos[1])
 
         if not self.board.is_valid_position(board_x, board_y):
@@ -544,24 +638,63 @@ class Game:
             if self.selected_position:
                 # Try to move to clicked position
                 if (board_x, board_y) in self.valid_moves:
-                    success = self.make_move_with_logging(
-                        self.game_state.current_player,
-                        self.selected_position[0],
-                        self.selected_position[1],
-                        board_x,
-                        board_y,
-                    )
-                    if success:
-                        # Update player's positions list
-                        player = self.game_state.current_player
-                        old_pos = (self.selected_position[0], self.selected_position[1])
-                        if old_pos in player.positions:
-                            player.positions.remove(old_pos)
-                        player.positions.append((board_x, board_y))
+                    player = self.game_state.current_player
+                    current_x, current_y = self.selected_position
 
-                        self.selected_position = None
-                        self.valid_moves = []
-                        self.game_state.switch_turn()
+                    # Check if this is a capture move first (for North player)
+                    if player.side.value == "pangui" and self.board.is_valid_capture(
+                        current_x, current_y, board_x, board_y, player
+                    ):
+                        # Execute capture move
+                        success, captured_player = self.make_capture_with_logging(
+                            player, current_x, current_y, board_x, board_y
+                        )
+                        if success and captured_player:
+                            # Remove captured piece from captured player's positions
+                            dx = board_x - current_x
+                            dy = board_y - current_y
+                            captured_pos = (current_x + dx // 2, current_y + dy // 2)
+                            if captured_pos in captured_player.positions:
+                                captured_player.positions.remove(captured_pos)
+                            # Remove token number mapping for captured piece
+                            captured_player.remove_token(captured_pos)
+
+                            # Update attacker's position
+                            old_pos = (current_x, current_y)
+                            new_pos = (board_x, board_y)
+                            if old_pos in player.positions:
+                                player.positions.remove(old_pos)
+                            player.positions.append(new_pos)
+                            # Update token number mapping
+                            player.move_token(old_pos, new_pos)
+
+                            self.selected_position = None
+                            self.valid_moves = []
+                            self.game_state.switch_turn()
+
+                            # Check for win condition
+                            self.check_win_condition()
+                    else:
+                        # Regular move
+                        success = self.make_move_with_logging(
+                            player, current_x, current_y, board_x, board_y
+                        )
+                        if success:
+                            # Update player's positions list
+                            old_pos = (current_x, current_y)
+                            new_pos = (board_x, board_y)
+                            if old_pos in player.positions:
+                                player.positions.remove(old_pos)
+                            player.positions.append(new_pos)
+                            # Update token number mapping
+                            player.move_token(old_pos, new_pos)
+
+                            self.selected_position = None
+                            self.valid_moves = []
+                            self.game_state.switch_turn()
+
+                            # Check for win condition
+                            self.check_win_condition()
                 else:
                     # Select new piece
                     self.try_select_piece(board_x, board_y)
@@ -620,10 +753,25 @@ class Game:
 
     def handle_keyboard(self, key):
         """Handle keyboard input for movement."""
+        # Restart game on any key press if game is over (except ESC for exit)
+        if self.game_state.game_over:
+            if key == pygame.K_ESCAPE:
+                pygame.quit()
+                sys.exit()
+            else:
+                self.restart_game()
+                return
+            return
+
         # Auto-select current player's first piece if nothing is selected
         if not self.selected_position:
             player = self.game_state.current_player
             if player.positions:
+                # Check if current player has any valid moves before auto-selecting
+                if not self.game_state._has_valid_moves(player, self.board):
+                    self.check_win_condition()
+                    return
+
                 # Select the first available piece
                 first_pos = player.positions[0]
                 self.selected_position = first_pos
@@ -650,48 +798,73 @@ class Game:
             dx, dy = move_map[key]
             current_x, current_y = self.selected_position
             target_x, target_y = current_x + dx, current_y + dy
+            player = self.game_state.current_player
 
-            # Check if move is valid and in valid_moves list
-            if (target_x, target_y) in self.valid_moves:
-                player = self.game_state.current_player
-
-                # Try capture move first (for north player)
-                if player.side.value == "pangui" and self.board.is_valid_capture(
-                    current_x, current_y, target_x, target_y, player
+            # For North player, check capture moves first (2-step jump)
+            if player.side.value == "pangui":
+                capture_x, capture_y = current_x + dx * 2, current_y + dy * 2
+                if (
+                    capture_x,
+                    capture_y,
+                ) in self.valid_moves and self.board.is_valid_capture(
+                    current_x, current_y, capture_x, capture_y, player
                 ):
+                    # Execute capture move
                     success, captured_player = self.make_capture_with_logging(
-                        player, current_x, current_y, target_x, target_y
+                        player, current_x, current_y, capture_x, capture_y
                     )
                     if success and captured_player:
                         # Remove captured piece from captured player's positions
-                        dx = target_x - current_x
-                        dy = target_y - current_y
-                        captured_pos = (current_x + dx // 2, current_y + dy // 2)
+                        capture_dx = capture_x - current_x
+                        capture_dy = capture_y - current_y
+                        captured_pos = (
+                            current_x + capture_dx // 2,
+                            current_y + capture_dy // 2,
+                        )
                         if captured_pos in captured_player.positions:
                             captured_player.positions.remove(captured_pos)
+                        # Remove token number mapping for captured piece
+                        captured_player.remove_token(captured_pos)
 
                         # Update attacker's position
-                        if (current_x, current_y) in player.positions:
-                            player.positions.remove((current_x, current_y))
-                        player.positions.append((target_x, target_y))
+                        old_pos = (current_x, current_y)
+                        new_pos = (capture_x, capture_y)
+                        if old_pos in player.positions:
+                            player.positions.remove(old_pos)
+                        player.positions.append(new_pos)
+                        # Update token number mapping
+                        player.move_token(old_pos, new_pos)
 
                         self.selected_position = None
                         self.valid_moves = []
                         self.game_state.switch_turn()
-                else:
-                    # Regular move
-                    success = self.make_move_with_logging(
-                        player, current_x, current_y, target_x, target_y
-                    )
-                    if success:
-                        # Update player's positions list
-                        if (current_x, current_y) in player.positions:
-                            player.positions.remove((current_x, current_y))
-                        player.positions.append((target_x, target_y))
 
-                        self.selected_position = None
-                        self.valid_moves = []
-                        self.game_state.switch_turn()  # Escape to deselect or exit
+                        # Check for win condition
+                        self.check_win_condition()
+                        return
+
+            # Check if regular move is valid and in valid_moves list
+            if (target_x, target_y) in self.valid_moves:
+                # Regular move
+                success = self.make_move_with_logging(
+                    player, current_x, current_y, target_x, target_y
+                )
+                if success:
+                    # Update player's positions list
+                    old_pos = (current_x, current_y)
+                    new_pos = (target_x, target_y)
+                    if old_pos in player.positions:
+                        player.positions.remove(old_pos)
+                    player.positions.append(new_pos)
+                    # Update token number mapping
+                    player.move_token(old_pos, new_pos)
+
+                    self.selected_position = None
+                    self.valid_moves = []
+                    self.game_state.switch_turn()
+
+                    # Check for win condition
+                    self.check_win_condition()
         elif key == pygame.K_ESCAPE:
             current_time = pygame.time.get_ticks()
 

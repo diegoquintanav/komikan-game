@@ -15,8 +15,8 @@ class TestGameIntegration:
 
         # Check north player setup
         assert len(game_state.player_north.positions) == 1
-        assert game_state.player_north.positions[0] == (2, 0)
-        north_node = board.get_node(2, 0)
+        assert game_state.player_north.positions[0] == (2, 1)
+        north_node = board.get_node(2, 1)
         assert north_node.occupied_by == game_state.player_north
 
         # Check south player setup
@@ -30,16 +30,16 @@ class TestGameIntegration:
         board, game_state = board_with_players
 
         # North player moves from (2,0) to (2,1)
-        success = board.move_player(game_state.player_north, 2, 0, 2, 1)
+        success = board.move_player(game_state.player_north, 2, 1, 2, 2)
         assert success
 
         # Update positions
-        game_state.player_north.positions.remove((2, 0))
-        game_state.player_north.positions.append((2, 1))
+        game_state.player_north.positions.remove((2, 1))
+        game_state.player_north.positions.append((2, 2))
 
         # Check board state
-        assert not board.get_node(2, 0).is_occupied()
-        assert board.get_node(2, 1).occupied_by == game_state.player_north
+        assert not board.get_node(2, 1).is_occupied()
+        assert board.get_node(2, 2).occupied_by == game_state.player_north
 
         # South player moves
         south_start = game_state.player_south.positions[0]  # First south position
