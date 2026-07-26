@@ -6,7 +6,6 @@ disabled path comprehensiveness, capture+disabled path interactions,
 and board-position sync risks.
 """
 
-from komikan.board import GameBoard
 from komikan.player import Player, PlayerSide
 
 

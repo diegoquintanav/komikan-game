@@ -142,9 +142,6 @@ def test_example_integration_marked():
     pass
 
 
-
-
-
 # How to add new test files:
 # 1. Create file starting with test_*.py in tests/ directory
 # 2. Import necessary modules and fixtures

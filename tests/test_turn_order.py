@@ -158,9 +158,7 @@ class TestTurnOrderWithAPI:
         sx, sy = south_pos
         adjacent = game.board.get_adjacent_positions(sx, sy)
         tx, ty = next(
-            (ax, ay)
-            for ax, ay in adjacent
-            if game.board.is_valid_move(sx, sy, ax, ay)
+            (ax, ay) for ax, ay in adjacent if game.board.is_valid_move(sx, sy, ax, ay)
         )
 
         success, _ = game.make_move(sx, sy, tx, ty)

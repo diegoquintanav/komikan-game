@@ -4,15 +4,14 @@ Verifies that GameManager stores independent GameInstance objects and that
 mutations in one game never leak into another.
 """
 
-import pytest
 from komikan.api.game_manager import GameManager, GameInstance
 from komikan.api.models import GameStatus
-from komikan.player import PlayerSide
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _standard_game(manager: GameManager) -> GameInstance:
     """Create a standard game and return it."""
@@ -43,6 +42,7 @@ def _south_positions(game: GameInstance) -> list[tuple[int, int]]:
 # ---------------------------------------------------------------------------
 # TestGameStateIsolation
 # ---------------------------------------------------------------------------
+
 
 class TestGameStateIsolation:
     """Core isolation: two standard games must not share any mutable state."""
@@ -144,6 +144,7 @@ class TestGameStateIsolation:
 # TestMultipleCustomGames
 # ---------------------------------------------------------------------------
 
+
 class TestMultipleCustomGames:
     """Custom games with different setups must stay independent."""
 
@@ -182,6 +183,7 @@ class TestMultipleCustomGames:
 # TestGameCounting
 # ---------------------------------------------------------------------------
 
+
 class TestGameCounting:
     """GameManager bookkeeping must be correct."""
 
@@ -213,6 +215,7 @@ class TestGameCounting:
 # TestStateDriftAfterManyMoves
 # ---------------------------------------------------------------------------
 
+
 class TestStateDriftAfterManyMoves:
     """Verify independence holds after multiple rounds of play."""
 
@@ -223,18 +226,18 @@ class TestStateDriftAfterManyMoves:
         b = _standard_game(mgr)
 
         # Game A: 5 moves — North/South alternate
-        a.make_move(2, 0, 2, 1)   # N
-        a.make_move(0, 5, 0, 4)   # S
-        a.make_move(2, 1, 2, 2)   # N
-        a.make_move(4, 5, 4, 4)   # S
-        a.make_move(2, 2, 2, 3)   # N
+        a.make_move(2, 0, 2, 1)  # N
+        a.make_move(0, 5, 0, 4)  # S
+        a.make_move(2, 1, 2, 2)  # N
+        a.make_move(4, 5, 4, 4)  # S
+        a.make_move(2, 2, 2, 3)  # N
 
         # Game B: 5 different moves
-        b.make_move(2, 0, 1, 0)   # N
-        b.make_move(1, 6, 1, 5)   # S
-        b.make_move(1, 0, 1, 1)   # N
-        b.make_move(3, 6, 3, 5)   # S
-        b.make_move(1, 1, 1, 2)   # N
+        b.make_move(2, 0, 1, 0)  # N
+        b.make_move(1, 6, 1, 5)  # S
+        b.make_move(1, 0, 1, 1)  # N
+        b.make_move(3, 6, 3, 5)  # S
+        b.make_move(1, 1, 1, 2)  # N
 
         assert len(a.move_history) == 5
         assert len(b.move_history) == 5
@@ -265,6 +268,7 @@ class TestStateDriftAfterManyMoves:
 # ---------------------------------------------------------------------------
 # TestGameManagerIndependence
 # ---------------------------------------------------------------------------
+
 
 class TestGameManagerIndependence:
     """Separate GameManager instances must not share games."""

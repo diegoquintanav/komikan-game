@@ -23,6 +23,7 @@ async def client():
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 async def _create_standard_game(client: AsyncClient) -> str:
     """Create a standard game and return its game_id."""
     resp = await client.post("/api/games")
@@ -291,9 +292,7 @@ class TestValidMovesEndpoint:
 
         # North can jump over (2,1) to land on (2,2)
         assert len(data["valid_captures"]) > 0
-        capture_targets = {
-            (c[0]["x"], c[0]["y"]) for c in data["valid_captures"]
-        }
+        capture_targets = {(c[0]["x"], c[0]["y"]) for c in data["valid_captures"]}
         assert (2, 2) in capture_targets
 
     @pytest.mark.asyncio

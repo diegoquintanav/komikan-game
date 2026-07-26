@@ -185,8 +185,13 @@ class TestMoveAfterGameOver:
         game = manager.create_custom_game(
             north_positions=[(2, 0)],
             south_positions=[
-                (1, 0), (3, 0), (2, 1),
-                (0, 0), (4, 0), (2, 2), (2, 3),
+                (1, 0),
+                (3, 0),
+                (2, 1),
+                (0, 0),
+                (4, 0),
+                (2, 2),
+                (2, 3),
             ],
             starting_player="pu trewa",
         )
