@@ -98,7 +98,12 @@ class TestKomikanAgent:
 
         valid_moves_resp = MagicMock()
         valid_moves_resp.json.return_value = {
-            "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
+            "tokens": [
+                {
+                    "position": [2, 0],
+                    "moves": [{"type": "advance", "to": [2, 1], "description": "move"}],
+                }
+            ]
         }
         valid_moves_resp.status_code = 200
 
@@ -146,7 +151,12 @@ class TestKomikanAgent:
 
         valid_moves_resp = MagicMock()
         valid_moves_resp.json.return_value = {
-            "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
+            "tokens": [
+                {
+                    "position": [2, 0],
+                    "moves": [{"type": "advance", "to": [2, 1], "description": "move"}],
+                }
+            ]
         }
         valid_moves_resp.status_code = 200
 
@@ -198,7 +208,14 @@ class TestKomikanAgent:
             provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
         )
 
-        valid_moves = {"tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]}
+        valid_moves = {
+            "tokens": [
+                {
+                    "position": [2, 0],
+                    "moves": [{"type": "advance", "to": [2, 1], "description": "move"}],
+                }
+            ]
+        }
 
         mock_api = MagicMock()
         game_state_resp = MagicMock()
@@ -256,7 +273,14 @@ class TestKomikanAgent:
             provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
         )
 
-        valid_moves = {"tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]}
+        valid_moves = {
+            "tokens": [
+                {
+                    "position": [2, 0],
+                    "moves": [{"type": "advance", "to": [2, 1], "description": "move"}],
+                }
+            ]
+        }
 
         mock_api = MagicMock()
         game_state_resp = MagicMock()
@@ -372,7 +396,14 @@ class TestKomikanAgent:
             resp.status_code = 200
             if "all-valid-moves" in url:
                 resp.json.return_value = {
-                    "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
+                    "tokens": [
+                        {
+                            "position": [2, 0],
+                            "moves": [
+                                {"type": "advance", "to": [2, 1], "description": "move"}
+                            ],
+                        }
+                    ]
                 }
             else:
                 if call_count < 3:

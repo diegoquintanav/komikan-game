@@ -16,8 +16,17 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"position": [0, 5], "moves": [{"type": "advance", "to": [0, 6], "description": "move"}]},
-                {"position": [1, 5], "moves": [{"type": "advance", "to": [1, 6], "description": "move"}, {"type": "advance", "to": [0, 6], "description": "move"}]},
+                {
+                    "position": [0, 5],
+                    "moves": [{"type": "advance", "to": [0, 6], "description": "move"}],
+                },
+                {
+                    "position": [1, 5],
+                    "moves": [
+                        {"type": "advance", "to": [1, 6], "description": "move"},
+                        {"type": "advance", "to": [0, 6], "description": "move"},
+                    ],
+                },
             ]
         }
         mock_api.get.return_value = resp
@@ -41,7 +50,10 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"position": [2, 5], "moves": [{"type": "advance", "to": [2, 6], "description": "move"}]},
+                {
+                    "position": [2, 5],
+                    "moves": [{"type": "advance", "to": [2, 6], "description": "move"}],
+                },
             ]
         }
         mock_api.get.return_value = resp
@@ -66,7 +78,13 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"position": [2, 5], "moves": [{"type": "advance", "to": [2, 6], "description": "move"}, {"type": "advance", "to": [1, 6], "description": "move"}]},
+                {
+                    "position": [2, 5],
+                    "moves": [
+                        {"type": "advance", "to": [2, 6], "description": "move"},
+                        {"type": "advance", "to": [1, 6], "description": "move"},
+                    ],
+                },
             ]
         }
         mock_api.get.return_value = resp
@@ -97,7 +115,10 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"position": [0, 6], "moves": [{"type": "advance", "to": [0, 7], "description": "move"}]},
+                {
+                    "position": [0, 6],
+                    "moves": [{"type": "advance", "to": [0, 7], "description": "move"}],
+                },
             ]
         }
         mock_api.get.return_value = resp

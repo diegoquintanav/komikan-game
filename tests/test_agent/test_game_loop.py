@@ -4,9 +4,7 @@ from unittest.mock import MagicMock
 from komikan.agent.game_loop import agent_game_loop
 
 
-def _make_game_state(
-    status: str = "active", current_player: str = "north", **extra
-):
+def _make_game_state(status: str = "active", current_player: str = "north", **extra):
     """Build a mock game state dict-like object."""
     state = {
         "status": status,

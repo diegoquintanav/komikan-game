@@ -55,9 +55,7 @@ def format_move_list(tokens: list[dict[str, object]]) -> str:
             for m in moves:
                 to = m["to"]
                 if m["type"] == "capture":
-                    lines.append(
-                        f"    -> capture land on ({to[0]},{to[1]})"
-                    )
+                    lines.append(f"    -> capture land on ({to[0]},{to[1]})")
                 else:
                     lines.append(f"    -> move to ({to[0]},{to[1]})")
 

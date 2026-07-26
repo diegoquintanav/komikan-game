@@ -81,7 +81,10 @@ class TestFormatGameStatePrompt:
 class TestFormatMoveList:
     def test_formats_single_move(self):
         moves = [
-            {"position": [0, 1], "moves": [{"type": "advance", "to": [0, 2], "description": "move"}]}
+            {
+                "position": [0, 1],
+                "moves": [{"type": "advance", "to": [0, 2], "description": "move"}],
+            }
         ]
         result = format_move_list(moves)
         assert "0" in result
@@ -92,7 +95,14 @@ class TestFormatMoveList:
         moves = [
             {
                 "position": [2, 2],
-                "moves": [{"type": "capture", "to": [2, 4], "description": "capture", "captures_from": [[2, 3]]}],
+                "moves": [
+                    {
+                        "type": "capture",
+                        "to": [2, 4],
+                        "description": "capture",
+                        "captures_from": [[2, 3]],
+                    }
+                ],
             }
         ]
         result = format_move_list(moves)
@@ -105,8 +115,17 @@ class TestFormatMoveList:
 
     def test_multiple_tokens(self):
         moves = [
-            {"position": [0, 1], "moves": [{"type": "advance", "to": [0, 2], "description": "move"}]},
-            {"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}, {"type": "advance", "to": [1, 1], "description": "move"}]},
+            {
+                "position": [0, 1],
+                "moves": [{"type": "advance", "to": [0, 2], "description": "move"}],
+            },
+            {
+                "position": [2, 0],
+                "moves": [
+                    {"type": "advance", "to": [2, 1], "description": "move"},
+                    {"type": "advance", "to": [1, 1], "description": "move"},
+                ],
+            },
         ]
         result = format_move_list(moves)
         assert "0,1" in result or "(0,1)" in result
@@ -118,7 +137,12 @@ class TestFormatMoveList:
                 "position": [1, 2],
                 "moves": [
                     {"type": "advance", "to": [1, 3], "description": "move"},
-                    {"type": "capture", "to": [1, 4], "description": "capture", "captures_from": [[1, 3]]},
+                    {
+                        "type": "capture",
+                        "to": [1, 4],
+                        "description": "capture",
+                        "captures_from": [[1, 3]],
+                    },
                 ],
             }
         ]
