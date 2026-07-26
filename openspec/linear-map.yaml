@@ -1,0 +1,23 @@
+# Linear Issue ↔ SDD Change mapping
+# Format: ALMUD-XXX: change-name
+#
+# Project 0: Public Release Readiness
+ALMUD-249: add-license-mit
+ALMUD-250: audit-gitignore-secrets
+ALMUD-251: add-gameplay-screenshots
+ALMUD-252: improve-mapuche-attribution
+ALMUD-253: verify-clean-clone-install
+ALMUD-254: add-ci-workflow
+ALMUD-255: add-contributing-md
+ALMUD-256: bug-audit-move-validation
+ALMUD-257: bug-audit-capture-mechanics
+ALMUD-258: bug-audit-win-conditions
+ALMUD-259: bug-audit-turn-order
+ALMUD-260: bug-audit-api-validation
+ALMUD-261: bug-audit-multi-game-concurrency
+ALMUD-262: bug-audit-idempotency-races
+ALMUD-263: bug-audit-legal-move-parity
+ALMUD-264: bug-audit-frontend-reconnect
+ALMUD-265: review-skipped-tests
+ALMUD-266: triage-todos-fixmes
+ALMUD-267: tag-v01-release

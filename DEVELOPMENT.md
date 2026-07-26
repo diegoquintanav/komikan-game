@@ -39,7 +39,7 @@
 ### Using Docker Compose
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 This starts both frontend (port 5173) and backend (port 8000) services.

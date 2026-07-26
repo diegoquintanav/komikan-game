@@ -2,6 +2,12 @@
 
 A digital implementation of Komikan, a traditional Mapuche board game from southern Chile and Argentina. This project includes both a Pygame desktop version and a modern web interface with REST API.
 
+## About the game
+
+Komikan is a traditional board game of the [Mapuche](https://en.wikipedia.org/wiki/Mapuche) people, originating from southern Chile and Argentina. It is an asymmetric hunt game — one player controls the **Pangui** (puma) and the other controls the **Pu Trewa** (dogs) — reflecting themes of hunting and cooperation that are central to Mapuche culture.
+
+This project is a digital adaptation created for educational and recreational purposes. The original game concept and rules are attributed to **Adrián Cheuque Pan**, a Mapuche educator and cultural advocate. Learn more about Komikan and its cultural context at [Adrián Cheuque Pan's website](https://adrian-cheuque-pan.jimdosite.com/).
+
 ## Features
 
 - **Pygame Desktop Version**: Traditional desktop game with visual interface
@@ -10,6 +16,15 @@ A digital implementation of Komikan, a traditional Mapuche board game from south
 - **Multiple Concurrent Games**: Support for multiple simultaneous game sessions
 - **Move History**: Complete audit trail of all moves with timestamps
 - **Win Condition Detection**: Automatic detection of game-ending states
+
+## Screenshots
+
+<!-- Replace placeholders with actual screenshots or GIFs -->
+
+| Desktop (Pygame) | Web (React) |
+|---|---|
+| ![Desktop gameplay — coming soon](docs/screenshots/desktop-gameplay.png) | ![Web gameplay — coming soon](docs/screenshots/web-gameplay.png) |
+| *Desktop gameplay — coming soon* | *Web gameplay — coming soon* |
 
 ## Game Overview
 
@@ -20,15 +35,15 @@ Komikan is an asymmetric hunt game where:
 - **Board**: 5×8 grid with special disabled nodes and paths
 - **Objective**: North captures tokens, South traps the Puma
 
-See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
+See [docs/01-game-rules.md](docs/01-game-rules.md) for complete rules.
 
 ## Getting Started
 
 ### Prerequisites
 
 - **Python 3.11 or higher**
-- **Node.js 18 or higher** (for web version)
-- **pip** (Python package installer)
+- **Node.js 22 or higher** (for web version)
+- **[uv](https://docs.astral.sh/uv/)** (Python package manager)
 
 ### Installation
 
@@ -42,7 +57,7 @@ See [docs/GAME_RULES.md](docs/GAME_RULES.md) for complete rules.
 2. **Install Python dependencies:**
 
    ```bash
-   pip install -e .
+   uv sync
    ```
 
 3. **For web version, install frontend dependencies:**
@@ -62,19 +77,19 @@ The easiest way to play Komikan with a modern browser interface:
 1. **Start the backend API:**
 
    ```bash
-   python -m uvicorn komikan.api.main:app --reload
+   uv run python -m uvicorn komikan.api.main:app --reload --port 8888
    ```
 
-   The API will be available at <http://localhost:8000>
+   The API will be available at <http://localhost:8888>
 
 2. **In a new terminal, start the frontend:**
 
    ```bash
    cd frontend
-   npm run dev
+   VITE_API_URL=http://localhost:8888 npm run dev
    ```
 
-   The web interface will be available at <http://localhost:5173>
+   The web interface will be available at <http://localhost:5173> (configured to use API at <http://localhost:8888>)
 
 3. **Open your browser and visit:** <http://localhost:5173>
 
@@ -92,7 +107,13 @@ The easiest way to play Komikan with a modern browser interface:
 Play using the traditional desktop interface:
 
 ```bash
-python -m komikan
+uv run python -m komikan.run
+```
+
+or 
+
+```bash
+uv run komikan
 ```
 
 **Controls:**
@@ -106,7 +127,7 @@ python -m komikan
 Run both frontend and backend with a single command:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Then visit:
@@ -114,6 +135,19 @@ Then visit:
 - Frontend: <http://localhost:5173>
 - Backend API: <http://localhost:8000>
 - API Docs: <http://localhost:8000/docs>
+
+### Option 4: Production Mode (Integrated)
+
+Build the frontend and let FastAPI serve it as static files:
+
+```bash
+cd frontend
+npm run build
+cd ..
+uv run python -m uvicorn komikan.api.main:app --host 0.0.0.0 --port 8000
+```
+
+Then visit <http://localhost:8000> — both the API and the web interface are served from the same port.
 
 ## API Usage
 
@@ -143,6 +177,7 @@ curl http://localhost:8000/api/games/abc123/moves
 ### API Endpoints
 
 - `POST /api/games` - Create a new game
+- `POST /api/games/custom` - Create a game with custom starting positions
 - `GET /api/games/{game_id}` - Get current game state
 - `POST /api/games/{game_id}/moves` - Submit a move
 - `GET /api/games/{game_id}/moves` - Get move history
@@ -158,28 +193,21 @@ curl http://localhost:8000/api/games/abc123/moves
 Install development dependencies:
 
 ```bash
-pip install -e ".[dev]"
-```
-
-Or if using the dev dependency group:
-
-```bash
-# The dev dependencies are already defined in pyproject.toml
-# They will be installed with the editable install above
+uv sync
 ```
 
 ### Running All Tests
 
-Run the complete test suite (82 tests):
+Run the complete test suite (84 tests):
 
 ```bash
-pytest tests/ -v
+uv run pytest tests/ -v
 ```
 
 **Expected output:**
 
 ```
-=================== 82 passed, 1 skipped, 1 xfailed in 0.5s ===================
+================== 82 passed, 1 skipped, 1 xfailed in 0.5s ===================
 ```
 
 ### Testing the Backend/API
@@ -187,7 +215,7 @@ pytest tests/ -v
 #### 1. Test Core Game Logic (Board, Players, Movement)
 
 ```bash
-pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
+uv run pytest tests/test_board.py tests/test_player.py tests/test_integration.py -v
 ```
 
 This tests:
@@ -201,7 +229,7 @@ This tests:
 #### 2. Test FastAPI Endpoints
 
 ```bash
-pytest tests/test_api.py -v
+uv run pytest tests/test_api.py -v
 ```
 
 This tests:
@@ -224,14 +252,9 @@ tests/test_api.py::test_concurrent_games PASSED
 #### 3. Run Specific Tests
 
 ```bash
-# Test only capture mechanics
-pytest tests/test_board.py::TestBoardCapture -v
-
-# Test only API game creation
-pytest tests/test_api.py::test_create_game -v
-
-# Test with detailed output
-pytest tests/test_api.py -v -s
+uv run pytest tests/test_board.py::TestBoardCapture -v  # Test only capture mechanics
+uv run pytest tests/test_api.py::test_create_game -v    # Test only API game creation
+uv run pytest tests/test_api.py -v -s                   # Test with detailed output
 ```
 
 ### Testing the Frontend (React)
@@ -286,52 +309,50 @@ This builds the production bundle and serves it locally for testing.
 ### Running Tests with Coverage
 
 ```bash
-# Install coverage tool if not already installed
-pip install pytest-cov
-
 # Run tests with coverage report
-pytest tests/ --cov=komikan --cov-report=html
+uv run pytest tests/ --cov=komikan --cov-report=html
 
 # Open htmlcov/index.html in your browser to see detailed coverage
 ```
-
-## Development
-
-See [DEVELOPMENT.md](DEVELOPMENT.md) for detailed development instructions.
 
 ### Project Structure
 
 ```
 komikan-game/
-├── src/komikan/          # Python source code
-│   ├── board.py          # Game board logic
-│   ├── player.py         # Player management
-│   ├── run.py            # Pygame interface
-│   └── api/              # FastAPI REST API
-│       ├── main.py       # API endpoints
-│       ├── models.py     # Pydantic models
-│       └── game_manager.py  # Game state management
-├── frontend/             # React + TypeScript frontend
-│   ├── src/
-│   │   ├── components/   # React components
-│   │   ├── types/        # TypeScript types
-│   │   └── api.ts        # API client
-│   └── dist/             # Production build
-├── tests/                # Test suite (82 tests)
-│   ├── test_board.py     # Board logic tests
-│   ├── test_player.py    # Player tests
-│   ├── test_integration.py  # Integration tests
-│   └── test_api.py       # API tests
-└── docs/                 # Documentation
-    └── GAME_RULES.md     # Complete game rules
+├── src/komikan/              # Python source code
+│   ├── board.py              # Game board logic (5×8 grid, movement/capture)
+│   ├── player.py             # Player management (PlayerSide enum, GameState)
+│   ├── run.py                # Pygame interface
+│   └── api/                  # FastAPI REST API
+│       ├── main.py           # API endpoints
+│       ├── models.py         # Pydantic models
+│       └── game_manager.py   # Game state management
+├── frontend/                 # React + TypeScript frontend
+│   └── src/
+│       ├── components/       # React components (GameBoard, GameStatus, MoveHistory, ExampleGames)
+│       ├── types/            # TypeScript types (game.ts)
+│       ├── data/             # Static data (exampleScenarios.ts)
+│       └── api.ts            # API client
+├── tests/                    # Test suite (84 tests)
+│   ├── conftest.py           # Shared fixtures
+│   ├── test_board.py         # Board logic tests
+│   ├── test_player.py        # Player tests
+│   ├── test_integration.py   # Integration tests
+│   ├── test_api.py           # API tests
+│   ├── test_performance.py   # Performance benchmarks
+│   └── test_example.py       # Testing patterns template
+├── docs/                     # Documentation
+│   ├── 01-game-rules.md      # Complete game rules
+│   └── adr/                  # Architecture Decision Records
+└── openspec/                 # SDD change artifacts
 ```
 
 ## Technology Stack
 
 - **Backend**: Python 3.11+, FastAPI, Pydantic, Pygame
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
+- **Frontend**: React 19, TypeScript, Tailwind CSS, Vite
 - **Testing**: pytest, httpx, pytest-asyncio
-- **Deployment**: Docker, docker-compose
+- **Deployment**: Docker, docker compose
 
 ## Win Conditions
 
@@ -345,7 +366,7 @@ komikan-game/
 
 **"No module named 'komikan'"**
 
-- Make sure you installed the package: `pip install -e .`
+- Make sure you installed the package: `uv sync`
 
 **"Command not found: npm"**
 
@@ -356,7 +377,7 @@ komikan-game/
 - Stop any other application using port 8000, or run the API on a different port:
 
   ```bash
-  python -m uvicorn komikan.api.main:app --port 8001
+  uv run python -m uvicorn komikan.api.main:app --port 8001
   ```
 
 **Frontend can't connect to API**
@@ -371,4 +392,4 @@ See [LICENSE](LICENSE) for details.
 
 ## Credits
 
-Based on the traditional Mapuche board game Komikan. Learn more at [Komikan on Adrián Cheuque Pan's website](https://adriancheuquepan.cl/komikan/).
+This project is based on the traditional Mapuche board game **Komikan**. Original game concept and cultural documentation by **Adrián Cheuque Pan** — [adrian-cheuque-pan.jimdosite.com](https://adrian-cheuque-pan.jimdosite.com/).
