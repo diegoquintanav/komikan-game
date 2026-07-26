@@ -52,7 +52,10 @@ class OpenAIProvider:
             )
             if not response.choices:
                 raise LLMError("LLM returned empty response", provider="openai")
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            if content is None:
+                raise LLMError("LLM returned no text content", provider="openai")
+            return content
         except LLMError:
             raise
         except Exception as e:
