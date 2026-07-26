@@ -4,9 +4,14 @@ A digital implementation of Komikan, a traditional Mapuche board game from south
 
 ## About the game
 
-Komikan is a traditional board game of the [Mapuche](https://en.wikipedia.org/wiki/Mapuche) people, originating from southern Chile and Argentina. It is an asymmetric hunt game — one player controls the **Pangui** (puma) and the other controls the **Pu Trewa** (dogs) — reflecting themes of hunting and cooperation that are central to Mapuche culture.
+Komikan is a traditional board game of the [Mapuche](https://en.wikipedia.org/wiki/Mapuche) people, originating from southern Chile and Argentina. It is an asymmetric hunt game: one player controls the **Pangui** (puma) and the other controls the **Pu Trewa** (dogs).
 
-This project is a digital adaptation created for educational and recreational purposes. The original game concept and rules are attributed to **Adrián Cheuque Pan**, a Mapuche educator and cultural advocate. Learn more about Komikan and its cultural context at [Adrián Cheuque Pan's website](https://adrian-cheuque-pan.jimdosite.com/).
+This project is a digital adaptation created for educational and recreational purposes. For more information about the game, visit
+
+- [Komikan - Wikipedia](https://en.wikipedia.org/wiki/Komikan)
+- [Komikan - Chile Para Niños (Government site)](https://www.chileparaninos.gob.cl/639/w3-article-639005.html)
+- [Komikan - Adrian Cheuquepan](https://adriancheuquepan.cl/komikan/)
+- [Komikan - BoardGameGeek](https://boardgamegeek.com/boardgame/64831/komikan)
 
 ## Features
 
@@ -23,8 +28,10 @@ This project is a digital adaptation created for educational and recreational pu
 
 | Desktop (Pygame) | Web (React) |
 |---|---|
-| ![Desktop gameplay — coming soon](docs/screenshots/desktop-gameplay.png) | ![Web gameplay — coming soon](docs/screenshots/web-gameplay.png) |
-| *Desktop gameplay — coming soon* | *Web gameplay — coming soon* |
+| ![Desktop gameplay - coming soon](docs/screenshots/desktop-gameplay.png) | ![Web gameplay](docs/screenshots/web-gameplay.png) |
+| *Desktop gameplay* | *Web gameplay* |
+
+> Warning: the desktop pygame version is marked as "legacy" and may not be actively maintained. The web version is the recommended way to play.
 
 ## Game Overview
 
@@ -147,7 +154,7 @@ cd ..
 uv run python -m uvicorn komikan.api.main:app --host 0.0.0.0 --port 8000
 ```
 
-Then visit <http://localhost:8000> — both the API and the web interface are served from the same port.
+Then visit <http://localhost:8000> - both the API and the web interface are served from the same port.
 
 ## API Usage
 
@@ -356,7 +363,7 @@ komikan-game/
 
 ## Win Conditions
 
-- **North (Pangui) wins**: Captures enough South tokens (≤4 remaining)
+- **North (Pangui) wins**: Captures enough South tokens (=<4 remaining)
 - **South (Pu Trewa) wins**: Traps North with no valid moves
 - **Stalemate**: South has no valid moves on their turn
 
@@ -390,6 +397,6 @@ komikan-game/
 This project is an educational implementation of a traditional Mapuche game.
 See [LICENSE](LICENSE) for details.
 
-## Credits
+## Contributing
 
-This project is based on the traditional Mapuche board game **Komikan**. Original game concept and cultural documentation by **Adrián Cheuque Pan** — [adrian-cheuque-pan.jimdosite.com](https://adrian-cheuque-pan.jimdosite.com/).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on how to contribute to this project.
