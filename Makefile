@@ -34,6 +34,11 @@ check: ## Run all checks (lint + format check + frontend lint)
 	uv run ruff format --check .
 	cd frontend && npm run lint
 
+# ── Pygame ─────────────────────────────────────────────
+
+pygame: ## Run the Pygame desktop version of the game
+	uv run komikan
+
 # ── Development Servers ────────────────────────────────
 
 dev-backend: ## Start FastAPI dev server (port 8000)
