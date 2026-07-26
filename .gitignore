@@ -42,3 +42,7 @@ playground/
 *.log
 # Local AI runtime state
 .atl/
+
+# Playwright
+.playwright/
+.playwright-mcp/
