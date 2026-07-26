@@ -72,6 +72,7 @@ bump-major: ## Bump major version (0.1.0 → 1.0.0)
 
 changelog: ## Regenerate CHANGELOG.md from conventional commits
 	uv run cz changelog --unreleased-version $(shell cat VERSION | sed 's/^v//')
+	uv run python scripts/link-changelog.py CHANGELOG.md
 
 # ── Release ────────────────────────────────────────────
 

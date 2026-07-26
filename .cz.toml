@@ -10,6 +10,11 @@ version_files = [
     "frontend/package.json:\"version\"",
     "src/komikan/__init__.py:__version__",
 ]
+# Custom template: renders commit hash links for every changelog entry
+template = "CHANGELOG.md.jinja2"
+pre_bump_hooks = [
+    "python scripts/link-changelog.py $CZ_PRE_CHANGELOG_FILE_NAME",
+]
 
 [tool.commitizen.customize]
 # Match all conventional commit types we use

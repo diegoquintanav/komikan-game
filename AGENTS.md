@@ -12,6 +12,31 @@ The copilot-instructions file (`.github/copilot-instructions.md`) covers the Pyt
 
 ---
 
+## Project management and specification
+
+* This project uses [Linear](https://linear.app/) for issue tracking. All issues must be linked to a Linear ticket (e.g., ALMUD-123) in the commit message. 
+* The linear initiative for this project is <https://linear.app/almudata/initiative/komikan-game-66e620fd3b3e/overview>
+* This project uses [OpenSpec](https://openspec.org) as its default Specification framework
+
+--- 
+
+## Pull requests workflow
+
+- A merge request must be linked to a Linear ticket and must reference the ticket in the PR description.
+- All PRs must pass CI checks (backend + frontend) before merging.
+- All PRs must be reviewed and approved by at least one other developer before merging.
+
+---
+
+## Commit conventions
+
+* This project uses [commitizen](https://commitizen-tools.github.io/commitizen/) for changelog generation and versioning. All commits must follow the conventions in the `.cz.toml` file.
+* All branches must follow the naming convention: `<github-username>/<ticket-number>-<short-description>` (e.g., `diegoquintanav/ALMUD-123-add-new-feature`).
+* All pull requests must be linked to a Linear ticket and must reference the ticket in the PR description.
+
+
+---
+
 ## Package manager: always `uv`, never `pip`
 
 ```bash
