@@ -40,7 +40,8 @@ class KomikanAgent:
         client = self._get_client()
         resp = client.get(f"/api/games/{self._game_id}")
         resp.raise_for_status()
-        return resp.json()
+        data = resp.json()
+        return data.get("game", data)
 
     def _fetch_valid_moves(self) -> list[dict[str, object]]:
         client = self._get_client()
@@ -67,11 +68,9 @@ class KomikanAgent:
             return False
 
         for token in valid_moves:
-            if token["from"] == [from_x, from_y]:
-                if [to_x, to_y] in token.get("moves", []):
-                    return True
-                for capture in token.get("captures", []):
-                    if capture[0] == [to_x, to_y]:
+            if token["position"] == [from_x, from_y]:
+                for m in token.get("moves", []):
+                    if m["to"] == [to_x, to_y]:
                         return True
         return False
 
@@ -80,7 +79,7 @@ class KomikanAgent:
         game_state = self._fetch_game_state()
         status = game_state.get("status", "")
 
-        if status != "in_progress":
+        if status != "active":
             return {"status": status}
 
         current_player = game_state.get("current_player", "")
@@ -115,7 +114,7 @@ class KomikanAgent:
                         "to_y": tool_call.arguments["to_y"],
                     }
                     result = self._execute_move(move)
-                    return result.get("new_state", result)
+                    return result.get("game", result)
 
                 logger.warning(
                     "LLM returned invalid move (attempt %d/%d): %s",
@@ -136,20 +135,11 @@ class KomikanAgent:
         """Execute a random legal move as fallback."""
         all_moves: list[dict[str, int]] = []
         for token in valid_moves:
-            from_x, from_y = token["from"]
+            from_x, from_y = token["position"]
             for m in token.get("moves", []):
+                to_x, to_y = m["to"]
                 all_moves.append(
-                    {"from_x": from_x, "from_y": from_y, "to_x": m[0], "to_y": m[1]}
-                )
-            for capture in token.get("captures", []):
-                to_pos = capture[0]
-                all_moves.append(
-                    {
-                        "from_x": from_x,
-                        "from_y": from_y,
-                        "to_x": to_pos[0],
-                        "to_y": to_pos[1],
-                    }
+                    {"from_x": from_x, "from_y": from_y, "to_x": to_x, "to_y": to_y}
                 )
 
         if not all_moves:
@@ -157,7 +147,7 @@ class KomikanAgent:
 
         move = random.choice(all_moves)
         result = self._execute_move(move)
-        return result.get("new_state", result)
+        return result.get("game", result)
 
     def play_until_done(self, max_turns: int = 200) -> str:
         """Run the agent's game loop until a terminal state or max turns."""
@@ -165,7 +155,7 @@ class KomikanAgent:
             game_state = self._fetch_game_state()
             status = game_state.get("status", "")
 
-            if status != "in_progress":
+            if status != "active":
                 return str(status)
 
             current_player = game_state.get("current_player", "")

@@ -16,8 +16,8 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"from": [0, 5], "moves": [[0, 6]], "captures": []},
-                {"from": [1, 5], "moves": [[1, 6], [0, 6]], "captures": []},
+                {"position": [0, 5], "moves": [{"type": "advance", "to": [0, 6], "description": "move"}]},
+                {"position": [1, 5], "moves": [{"type": "advance", "to": [1, 6], "description": "move"}, {"type": "advance", "to": [0, 6], "description": "move"}]},
             ]
         }
         mock_api.get.return_value = resp
@@ -41,7 +41,7 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"from": [2, 5], "moves": [[2, 6]], "captures": []},
+                {"position": [2, 5], "moves": [{"type": "advance", "to": [2, 6], "description": "move"}]},
             ]
         }
         mock_api.get.return_value = resp
@@ -66,7 +66,7 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"from": [2, 5], "moves": [[2, 6], [1, 6]], "captures": []},
+                {"position": [2, 5], "moves": [{"type": "advance", "to": [2, 6], "description": "move"}, {"type": "advance", "to": [1, 6], "description": "move"}]},
             ]
         }
         mock_api.get.return_value = resp
@@ -97,7 +97,7 @@ class TestRandomOpponent:
         resp.status_code = 200
         resp.json.return_value = {
             "tokens": [
-                {"from": [0, 6], "moves": [[0, 7]], "captures": []},
+                {"position": [0, 6], "moves": [{"type": "advance", "to": [0, 7], "description": "move"}]},
             ]
         }
         mock_api.get.return_value = resp

@@ -25,14 +25,14 @@ def agent_game_loop(
         game_state = agent._fetch_game_state()
         status = str(game_state.get("status", "unknown"))
 
-        if status != "in_progress":
+        if status != "active":
             return status
 
         current_player = str(game_state.get("current_player", ""))
 
         if current_player == agent.side:
             result = agent.play_turn()
-            if result and result.get("status") and result["status"] != "in_progress":
+            if result and result.get("status") and result["status"] != "active":
                 return str(result["status"])
         else:
             move = opponent.choose_move()
@@ -60,7 +60,7 @@ def game_loop(game: Any, bot: Any, max_turns: int = 200) -> dict[str, Any]:
             break
 
         try:
-            move = bot.choose_move()
+            move = bot.choose_move(game)
             success, error_msg = game.make_move(move)
         except ValueError as e:
             reason = str(e)

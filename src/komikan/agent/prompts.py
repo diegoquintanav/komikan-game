@@ -45,22 +45,21 @@ def format_move_list(tokens: list[dict[str, object]]) -> str:
     lines = ["Valid moves:"]
 
     for token in tokens:
-        from_pos = token["from"]
+        from_pos = token["position"]
         from_str = f"({from_pos[0]},{from_pos[1]})"
 
         moves = token.get("moves", [])
-        captures = token.get("captures", [])
 
-        if moves or captures:
+        if moves:
             lines.append(f"  Token at {from_str}:")
             for m in moves:
-                lines.append(f"    -> move to ({m[0]},{m[1]})")
-            for capture in captures:
-                to_pos = capture[0]
-                captured_pos = capture[1]
-                lines.append(
-                    f"    -> capture at ({captured_pos[0]},{captured_pos[1]}) land on ({to_pos[0]},{to_pos[1]})"
-                )
+                to = m["to"]
+                if m["type"] == "capture":
+                    lines.append(
+                        f"    -> capture land on ({to[0]},{to[1]})"
+                    )
+                else:
+                    lines.append(f"    -> move to ({to[0]},{to[1]})")
 
     return "\n".join(lines)
 

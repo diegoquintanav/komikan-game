@@ -30,7 +30,7 @@ class TestKomikanAgent:
 
         mock_api = MagicMock()
         mock_api.get.return_value.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -53,7 +53,7 @@ class TestKomikanAgent:
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -89,7 +89,7 @@ class TestKomikanAgent:
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -98,14 +98,14 @@ class TestKomikanAgent:
 
         valid_moves_resp = MagicMock()
         valid_moves_resp.json.return_value = {
-            "tokens": [{"from": [2, 0], "moves": [[2, 1]], "captures": []}]
+            "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
         }
         valid_moves_resp.status_code = 200
 
         move_resp = MagicMock()
         move_resp.json.return_value = {
             "status": "ok",
-            "new_state": {"status": "in_progress", "current_player": "south"},
+            "game": {"status": "active", "current_player": "south"},
         }
         move_resp.status_code = 200
 
@@ -137,7 +137,7 @@ class TestKomikanAgent:
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -146,15 +146,15 @@ class TestKomikanAgent:
 
         valid_moves_resp = MagicMock()
         valid_moves_resp.json.return_value = {
-            "tokens": [{"from": [2, 0], "moves": [[2, 1]], "captures": []}]
+            "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
         }
         valid_moves_resp.status_code = 200
 
         move_resp = MagicMock()
         move_resp.json.return_value = {
             "status": "ok",
-            "new_state": {
-                "status": "in_progress",
+            "game": {
+                "status": "active",
                 "current_player": "south",
                 "move_count": 6,
                 "board": {},
@@ -198,12 +198,12 @@ class TestKomikanAgent:
             provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
         )
 
-        valid_moves = {"tokens": [{"from": [2, 0], "moves": [[2, 1]], "captures": []}]}
+        valid_moves = {"tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]}
 
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -217,8 +217,8 @@ class TestKomikanAgent:
         move_resp = MagicMock()
         move_resp.json.return_value = {
             "status": "ok",
-            "new_state": {
-                "status": "in_progress",
+            "game": {
+                "status": "active",
                 "current_player": "south",
                 "move_count": 6,
                 "board": {},
@@ -256,12 +256,12 @@ class TestKomikanAgent:
             provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
         )
 
-        valid_moves = {"tokens": [{"from": [2, 0], "moves": [[2, 1]], "captures": []}]}
+        valid_moves = {"tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]}
 
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "north",
             "move_count": 5,
             "board": {},
@@ -275,8 +275,8 @@ class TestKomikanAgent:
         move_resp = MagicMock()
         move_resp.json.return_value = {
             "status": "ok",
-            "new_state": {
-                "status": "in_progress",
+            "game": {
+                "status": "active",
                 "current_player": "south",
                 "move_count": 6,
                 "board": {},
@@ -314,7 +314,7 @@ class TestKomikanAgent:
         mock_api = MagicMock()
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "south",
             "move_count": 5,
             "board": {},
@@ -372,12 +372,12 @@ class TestKomikanAgent:
             resp.status_code = 200
             if "all-valid-moves" in url:
                 resp.json.return_value = {
-                    "tokens": [{"from": [2, 0], "moves": [[2, 1]], "captures": []}]
+                    "tokens": [{"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}]}]
                 }
             else:
                 if call_count < 3:
                     resp.json.return_value = {
-                        "status": "in_progress",
+                        "status": "active",
                         "current_player": "north",
                         "move_count": call_count,
                         "board": {},
@@ -395,7 +395,7 @@ class TestKomikanAgent:
         move_resp = MagicMock()
         move_resp.status_code = 200
         move_resp.json.return_value = {
-            "status": "in_progress",
+            "status": "active",
             "current_player": "south",
             "move_count": 1,
             "board": {},

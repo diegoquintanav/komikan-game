@@ -165,6 +165,9 @@ def main(argv: list[str] | None = None) -> None:
     print(f"  Agent plays: {args.side} | Opponent: {args.opponent}")
     print()
 
+    SIDE_MAP = {"north": "pangui", "south": "pu trewa"}
+    api_side = SIDE_MAP[args.side]
+
     # Resolve API keys
     import os
 
@@ -205,7 +208,7 @@ def main(argv: list[str] | None = None) -> None:
         provider=provider,
         base_url=args.base_url,
         game_id=game_id,
-        side=args.side,
+        side=api_side,
     )
 
     # Game loop
@@ -214,7 +217,7 @@ def main(argv: list[str] | None = None) -> None:
         game_state = fetch_game_state(client, game_id)
         status = game_state.get("status", "unknown")
 
-        if status != "in_progress":
+        if status != "active":
             break
 
         current_player = game_state.get("current_player", "")
@@ -224,7 +227,7 @@ def main(argv: list[str] | None = None) -> None:
         print_board(game_state)
         print_game_info(game_state)
 
-        if current_player == args.side:
+        if current_player == api_side:
             print(f"  Agent ({args.provider}/{model}) is thinking...")
             result = agent.play_turn()
 
@@ -233,7 +236,7 @@ def main(argv: list[str] | None = None) -> None:
                 continue
 
             new_status = result.get("status", status)
-            if new_status != "in_progress":
+            if new_status != "active":
                 game_state = fetch_game_state(client, game_id)
                 print_board(game_state)
                 print(f"  Game over: {game_state.get('status', 'unknown')}")
@@ -275,8 +278,6 @@ def _play_human_turn(client: httpx.Client, game_id: str) -> None:
             to_x, to_y = m["to"]
             print(f"    {from_x},{from_y} -> {to_x},{to_y}")
             all_moves.append(((from_x, from_y), (to_x, to_y)))
-        for m in token.get("moves", []):
-            pass  # already printed
 
     while True:
         try:

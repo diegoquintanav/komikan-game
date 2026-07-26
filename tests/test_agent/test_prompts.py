@@ -80,14 +80,21 @@ class TestFormatGameStatePrompt:
 
 class TestFormatMoveList:
     def test_formats_single_move(self):
-        moves = [{"from": [0, 1], "moves": [[0, 2]], "captures": []}]
+        moves = [
+            {"position": [0, 1], "moves": [{"type": "advance", "to": [0, 2], "description": "move"}]}
+        ]
         result = format_move_list(moves)
         assert "0" in result
         assert "1" in result
         assert "2" in result
 
     def test_formats_capture(self):
-        moves = [{"from": [2, 2], "moves": [], "captures": [[[2, 4], [2, 3]]]}]
+        moves = [
+            {
+                "position": [2, 2],
+                "moves": [{"type": "capture", "to": [2, 4], "description": "capture", "captures_from": [[2, 3]]}],
+            }
+        ]
         result = format_move_list(moves)
         assert "2,2" in result or "(2,2)" in result
 
@@ -98,15 +105,23 @@ class TestFormatMoveList:
 
     def test_multiple_tokens(self):
         moves = [
-            {"from": [0, 1], "moves": [[0, 2]], "captures": []},
-            {"from": [2, 0], "moves": [[2, 1], [1, 1]], "captures": []},
+            {"position": [0, 1], "moves": [{"type": "advance", "to": [0, 2], "description": "move"}]},
+            {"position": [2, 0], "moves": [{"type": "advance", "to": [2, 1], "description": "move"}, {"type": "advance", "to": [1, 1], "description": "move"}]},
         ]
         result = format_move_list(moves)
         assert "0,1" in result or "(0,1)" in result
         assert "2,0" in result or "(2,0)" in result
 
     def test_with_captures_and_moves(self):
-        moves = [{"from": [1, 2], "moves": [[1, 3]], "captures": [[[1, 4], [1, 3]]]}]
+        moves = [
+            {
+                "position": [1, 2],
+                "moves": [
+                    {"type": "advance", "to": [1, 3], "description": "move"},
+                    {"type": "capture", "to": [1, 4], "description": "capture", "captures_from": [[1, 3]]},
+                ],
+            }
+        ]
         result = format_move_list(moves)
         assert isinstance(result, str)
         assert len(result) > 0

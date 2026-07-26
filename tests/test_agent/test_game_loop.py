@@ -5,7 +5,7 @@ from komikan.agent.game_loop import agent_game_loop
 
 
 def _make_game_state(
-    status: str = "in_progress", current_player: str = "north", **extra
+    status: str = "active", current_player: str = "north", **extra
 ):
     """Build a mock game state dict-like object."""
     state = {
@@ -61,10 +61,10 @@ class TestAgentGameLoop:
             return mock
 
         mock_agent._fetch_game_state.side_effect = [
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
         ]
 
         result = agent_game_loop(mock_agent, mock_opponent, max_turns=10)
@@ -97,8 +97,8 @@ class TestAgentGameLoop:
         mock_opponent.choose_move.side_effect = track_opponent
 
         game_states = [
-            {"status": "in_progress", "current_player": "north"},
-            {"status": "in_progress", "current_player": "south"},
+            {"status": "active", "current_player": "north"},
+            {"status": "active", "current_player": "south"},
         ]
 
         def make_state(s):
@@ -135,12 +135,12 @@ class TestAgentGameLoop:
             return mock
 
         mock_agent._fetch_game_state.side_effect = [
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
         ]
 
         agent_game_loop(mock_agent, mock_opponent, max_turns=3)
@@ -178,9 +178,9 @@ class TestAgentGameLoop:
             return mock
 
         mock_agent._fetch_game_state.side_effect = [
-            make_state({"status": "in_progress", "current_player": "north"}),
-            make_state({"status": "in_progress", "current_player": "south"}),
-            make_state({"status": "in_progress", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "south"}),
+            make_state({"status": "active", "current_player": "north"}),
         ]
 
         result = agent_game_loop(mock_agent, mock_opponent, max_turns=10)
@@ -202,7 +202,7 @@ class TestAgentGameLoop:
             return mock
 
         mock_agent._fetch_game_state.side_effect = [
-            make_state({"status": "in_progress", "current_player": "north"}),
+            make_state({"status": "active", "current_player": "north"}),
         ]
 
         result = agent_game_loop(mock_agent, mock_opponent, max_turns=10)
