@@ -47,6 +47,9 @@ class RandomOpponent:
                     {"from_x": from_x, "from_y": from_y, "to_x": to_x, "to_y": to_y}
                 )
 
+        if not all_moves:
+            raise ValueError("No legal moves available for the current player")
+
         move = random.choice(all_moves)
 
         move_resp = client.post(f"/api/games/{self._game_id}/moves", json=move)
