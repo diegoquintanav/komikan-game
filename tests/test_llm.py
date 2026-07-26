@@ -62,7 +62,9 @@ class TestOpenAIProvider:
 
         mock_client = AsyncMock()
         mock_response = MagicMock()
-        mock_response.choices = [MagicMock(message=MagicMock(content="Hello from OpenAI"))]
+        mock_response.choices = [
+            MagicMock(message=MagicMock(content="Hello from OpenAI"))
+        ]
         mock_client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         provider = OpenAIProvider.__new__(OpenAIProvider)
@@ -133,9 +135,7 @@ class TestAnthropicProvider:
         from komikan.llm import AnthropicProvider, LLMError
 
         mock_client = AsyncMock()
-        mock_client.messages.create = AsyncMock(
-            side_effect=Exception("overloaded")
-        )
+        mock_client.messages.create = AsyncMock(side_effect=Exception("overloaded"))
 
         provider = AnthropicProvider.__new__(AnthropicProvider)
         provider._client = mock_client

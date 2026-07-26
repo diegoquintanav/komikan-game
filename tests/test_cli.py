@@ -1,6 +1,5 @@
 """Tests for the komikan-cli command-line interface."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 
@@ -122,5 +121,5 @@ class TestCLIEntry:
         mock_llm.chat.return_value = "from (2,0) to (2,1)"
 
         with patch("komikan.llm.LLMProvider", return_value=mock_llm) as mock_factory:
-            player = create_player("llm", game)
+            _player = create_player("llm", game)
             mock_factory.assert_called_once()

@@ -1,6 +1,5 @@
 """Tests for prompt formatting and LLM response parsing."""
 
-import pytest
 from unittest.mock import MagicMock
 
 

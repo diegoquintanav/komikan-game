@@ -43,18 +43,22 @@ def format_game_state(game) -> str:
         else:
             lines.append(f"  Token at ({from_x},{from_y}): no valid moves")
 
-    lines.extend([
-        "",
-        "Choose ONE move. Respond with EXACTLY this format:",
-        '  from (x1,y1) to (x2,y2)',
-        "For captures, append 'capture' at the end.",
-        "Do not include any other text.",
-    ])
+    lines.extend(
+        [
+            "",
+            "Choose ONE move. Respond with EXACTLY this format:",
+            "  from (x1,y1) to (x2,y2)",
+            "For captures, append 'capture' at the end.",
+            "Do not include any other text.",
+        ]
+    )
 
     return "\n".join(lines)
 
 
-def parse_llm_move(response: str, valid_moves: list[dict[str, Any]]) -> dict[str, Any] | None:
+def parse_llm_move(
+    response: str, valid_moves: list[dict[str, Any]]
+) -> dict[str, Any] | None:
     """Parse an LLM response string into a move dict.
 
     Args:

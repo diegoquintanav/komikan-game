@@ -62,7 +62,9 @@ class OpenAIProvider:
 class AnthropicProvider:
     """Anthropic adapter implementing LLMProtocol."""
 
-    def __init__(self, *, model: str = "claude-sonnet-4-20250514", api_key: str | None = None):
+    def __init__(
+        self, *, model: str = "claude-sonnet-4-20250514", api_key: str | None = None
+    ):
         try:
             import anthropic
         except ImportError as e:

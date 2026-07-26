@@ -7,11 +7,9 @@ Player types: human, random, llm
 """
 
 import argparse
-import sys
 import time
 
 from komikan.agent.bot import RandomBot, Move
-from komikan.agent.game_loop import game_loop
 from komikan.agent.prompts import format_game_state, parse_llm_move
 
 
@@ -168,14 +166,12 @@ def get_llm_move(game, llm_provider) -> Move | None:
     Returns:
         Move parsed from LLM response, or random fallback.
     """
-    current_player = game.core_state.current_player
+    _current_player = game.core_state.current_player
     prompt = format_game_state(game)
 
     for attempt in range(3):
         try:
-            response = llm_provider.chat(
-                [{"role": "user", "content": prompt}]
-            )
+            response = llm_provider.chat([{"role": "user", "content": prompt}])
             valid_moves = _build_valid_moves_list(game)
             parsed = parse_llm_move(response, valid_moves)
             if parsed is not None:
@@ -187,7 +183,9 @@ def get_llm_move(game, llm_provider) -> Move | None:
                     if (to_p.x, to_p.y) == to_pos:
                         is_capture = True
                         break
-                print(f"  LLM chose: ({from_pos[0]},{from_pos[1]}) -> ({to_pos[0]},{to_pos[1]})")
+                print(
+                    f"  LLM chose: ({from_pos[0]},{from_pos[1]}) -> ({to_pos[0]},{to_pos[1]})"
+                )
                 return Move(
                     from_position=from_pos,
                     to_position=to_pos,
@@ -209,13 +207,17 @@ def _build_valid_moves_list(game) -> list[dict]:
         fx, fy = pos
         valid_advances, valid_captures = game.get_valid_moves(fx, fy)
         for m in valid_advances:
-            moves.append({"type": "advance", "to": [m.x, m.y], "description": "advance"})
+            moves.append(
+                {"type": "advance", "to": [m.x, m.y], "description": "advance"}
+            )
         for to_pos, cap_pos in valid_captures:
-            moves.append({
-                "type": "capture",
-                "to": [to_pos.x, to_pos.y],
-                "description": f"capture over ({cap_pos.x},{cap_pos.y})",
-            })
+            moves.append(
+                {
+                    "type": "capture",
+                    "to": [to_pos.x, to_pos.y],
+                    "description": f"capture over ({cap_pos.x},{cap_pos.y})",
+                }
+            )
     return moves
 
 
@@ -229,6 +231,7 @@ def create_player(player_type: str, game):
         return get_random_move
     elif player_type == "llm":
         from komikan.llm import LLMProvider
+
         provider = LLMProvider("openai")
         return lambda g: get_llm_move(g, provider)
     else:

@@ -1,7 +1,6 @@
 """Tests for the game_loop orchestrator."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 
 class TestGameLoop:
