@@ -43,7 +43,7 @@ cd frontend && npm run lint        # ESLint
 ## PR expectations
 
 - **Commits**: [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, etc.)
-- **Branch naming**: `diegoquintanav/almud-XXX-short-description`
+- **Branch naming**: `<github-username>/almud-XXX-short-description`
 - Keep PRs focused — one issue per PR when possible.
 
 ## Code style
