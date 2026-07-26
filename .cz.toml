@@ -1,5 +1,5 @@
 [tool.commitizen]
-name = "cz_conventional_commits"
+name = "cz_customize"
 tag_format = "v$version"
 version_scheme = "pep440"
 version_provider = "uv"
@@ -10,3 +10,67 @@ version_files = [
     "frontend/package.json:\"version\"",
     "src/komikan/__init__.py:__version__",
 ]
+
+[tool.commitizen.customize]
+# Match all conventional commit types we use
+commit_parser = '(?P<change_type>feat|fix|docs|test|ci|refactor|perf|chore|new|build|style)(?:\((?P<scope>[^()\r\n]*)\))?(?P<breaking>!)?:\s(?P<message>.*)?'
+# Include all commits that have any type prefix
+changelog_pattern = '^(feat|fix|docs|test|ci|refactor|perf|chore|new|build|style|BREAKING CHANGE)'
+# Map commit types to changelog section headers
+change_type_map = { "feat" = "Feat", "fix" = "Fix", "docs" = "Docs", "test" = "Test", "ci" = "CI", "refactor" = "Refactor", "perf" = "Perf", "chore" = "Chore", "new" = "Feat", "build" = "Chore", "style" = "Refactor" }
+# Order of sections in changelog
+change_type_order = ["Feat", "Fix", "Docs", "Test", "CI", "Refactor", "Perf", "Chore"]
+# Bump patterns (same as cz_conventional_commits defaults)
+bump_pattern = '^((BREAKING[\\-\\ ]CHANGE|\\w+)(\\(.+\\))?!?):'
+bump_map = { "feat" = "MINOR", "fix" = "PATCH", "refactor" = "PATCH", "perf" = "PATCH" }
+bump_map_major_version_zero = { "feat" = "PATCH", "fix" = "PATCH", "refactor" = "PATCH", "perf" = "PATCH" }
+# Schema for cz check
+schema = "<type>(<scope>): <subject>\n<BLANK LINE>\n<body>\n<BLANK LINE>\n(BREAKING CHANGE: )<footer>"
+schema_pattern = '(?s)(feat|fix|docs|test|ci|refactor|perf|chore|new|build|style|bump|revert)(\\(\\S+\\))?!?: ([^\\n\\r]+)((\\n\\n.*)|(\\s*))?$'
+
+example = "feat: add user authentication\n\nImplement JWT-based auth\n\ncloses #12"
+
+info = "Conventional Commits with all standard types"
+
+[[tool.commitizen.customize.questions]]
+type = "list"
+name = "prefix"
+message = "Select the type of change you are committing"
+choices = [
+    {value = "feat", name = "feat: A new feature. Correlates with MINOR in SemVer", key = "f"},
+    {value = "fix", name = "fix: A bug fix. Correlates with PATCH in SemVer", key = "x"},
+    {value = "docs", name = "docs: Documentation only changes", key = "d"},
+    {value = "test", name = "test: Adding missing or correcting existing tests", key = "t"},
+    {value = "ci", name = "ci: Changes to CI configuration files and scripts", key = "c"},
+    {value = "refactor", name = "refactor: A code change that neither fixes a bug nor adds a feature", key = "r"},
+    {value = "perf", name = "perf: A code change that improves performance", key = "p"},
+    {value = "chore", name = "chore: Other changes that don't modify src or test files", key = "h"},
+    {value = "style", name = "style: Changes that do not affect the meaning of the code", key = "s"},
+    {value = "build", name = "build: Changes that affect the build system or external dependencies", key = "b"},
+]
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "scope"
+message = "What is the scope of this change? (press [enter] to skip)\n"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "subject"
+message = "Write a short and imperative summary of the code changes: (lower case and no period)\n"
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "body"
+message = "Provide additional contextual information about the code changes: (press [enter] to skip)\n"
+
+[[tool.commitizen.customize.questions]]
+type = "confirm"
+name = "is_breaking_change"
+message = "Is this a BREAKING CHANGE? Correlates with MAJOR in SemVer"
+default = false
+
+[[tool.commitizen.customize.questions]]
+type = "input"
+name = "footer"
+message = "Footer. Information about Breaking Changes and reference issues: (press [enter] to skip)\n"
