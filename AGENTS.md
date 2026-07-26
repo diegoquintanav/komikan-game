@@ -61,7 +61,7 @@ npm run preview    # preview production build
 ### Full stack
 
 ```bash
-docker-compose up  # backend :8000, frontend :5173, API docs :8000/docs
+docker compose up  # backend :8000, frontend :5173, API docs :8000/docs
 ```
 
 ---

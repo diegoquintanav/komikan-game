@@ -40,3 +40,5 @@ frontend/dist/
 # playground
 playground/
 *.log
+# Local AI runtime state
+.atl/

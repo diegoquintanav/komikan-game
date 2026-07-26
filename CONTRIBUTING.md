@@ -25,7 +25,7 @@ cd frontend && npm install && cd ..
 | Pygame desktop | `uv run python -m komikan` |
 | REST API | `uv run komikan-api` |
 | React frontend | `cd frontend && npm run dev` |
-| Docker (all) | `docker-compose up` |
+| Docker (all) | `docker compose up` |
 
 ## Running tests
 

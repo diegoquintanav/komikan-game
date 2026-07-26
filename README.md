@@ -77,19 +77,19 @@ The easiest way to play Komikan with a modern browser interface:
 1. **Start the backend API:**
 
    ```bash
-   uv run python -m uvicorn komikan.api.main:app --reload
+   uv run python -m uvicorn komikan.api.main:app --reload --port 8888
    ```
 
-   The API will be available at <http://localhost:8000>
+   The API will be available at <http://localhost:8888>
 
 2. **In a new terminal, start the frontend:**
 
    ```bash
    cd frontend
-   npm run dev
+   VITE_API_URL=http://localhost:8888 npm run dev
    ```
 
-   The web interface will be available at <http://localhost:5173>
+   The web interface will be available at <http://localhost:5173> (configured to use API at <http://localhost:8888>)
 
 3. **Open your browser and visit:** <http://localhost:5173>
 
@@ -107,7 +107,13 @@ The easiest way to play Komikan with a modern browser interface:
 Play using the traditional desktop interface:
 
 ```bash
-uv run python -m komikan
+uv run python -m komikan.run
+```
+
+or 
+
+```bash
+uv run komikan
 ```
 
 **Controls:**
@@ -121,7 +127,7 @@ uv run python -m komikan
 Run both frontend and backend with a single command:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Then visit:
@@ -346,7 +352,7 @@ komikan-game/
 - **Backend**: Python 3.11+, FastAPI, Pydantic, Pygame
 - **Frontend**: React 19, TypeScript, Tailwind CSS, Vite
 - **Testing**: pytest, httpx, pytest-asyncio
-- **Deployment**: Docker, docker-compose
+- **Deployment**: Docker, docker compose
 
 ## Win Conditions
 
