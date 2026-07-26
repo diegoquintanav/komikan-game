@@ -21,6 +21,7 @@ def agent_game_loop(
     Returns:
         The final game status string (e.g. "north_won", "south_won", "stalemate").
     """
+    status = "unknown"
     for _ in range(max_turns):
         game_state = agent._fetch_game_state()
         status = str(game_state.get("status", "unknown"))
@@ -35,9 +36,8 @@ def agent_game_loop(
             if result and result.get("status") and result["status"] != "active":
                 return str(result["status"])
         else:
-            move = opponent.choose_move()
-            if move:
-                agent._execute_move(move)
+            # opponent.choose_move() already posts the move to the REST API
+            opponent.choose_move()
 
     return status
 
