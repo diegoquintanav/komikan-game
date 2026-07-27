@@ -9,17 +9,24 @@ class TestKomikanAgent:
     def test_import(self):
         assert KomikanAgent is not None
 
-    def test_default_side_is_north(self):
+    def test_default_side_normalizes_to_pangui(self):
         mock_provider = MagicMock(spec=LLMProvider)
         agent = KomikanAgent(provider=mock_provider, base_url="http://localhost:8000")
-        assert agent.side == "north"
+        assert agent.side == "pangui"
 
-    def test_explicit_side_south(self):
+    def test_explicit_side_normalizes_to_pu_trewa(self):
         mock_provider = MagicMock(spec=LLMProvider)
         agent = KomikanAgent(
             provider=mock_provider, base_url="http://localhost:8000", side="south"
         )
-        assert agent.side == "south"
+        assert agent.side == "pu trewa"
+
+    def test_explicit_api_side_passes_through(self):
+        mock_provider = MagicMock(spec=LLMProvider)
+        agent = KomikanAgent(
+            provider=mock_provider, base_url="http://localhost:8000", side="pangui"
+        )
+        assert agent.side == "pangui"
 
     def test_play_turn_fetches_game_state(self):
         mock_provider = MagicMock(spec=LLMProvider)
@@ -31,7 +38,7 @@ class TestKomikanAgent:
         mock_api = MagicMock()
         mock_api.get.return_value.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -54,7 +61,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -90,7 +97,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -143,7 +150,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -221,7 +228,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -286,7 +293,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "active",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 5,
             "board": {},
         }
@@ -361,7 +368,7 @@ class TestKomikanAgent:
         game_state_resp = MagicMock()
         game_state_resp.json.return_value = {
             "status": "north_won",
-            "current_player": "north",
+            "current_player": "pangui",
             "move_count": 30,
             "board": {},
         }
@@ -409,14 +416,14 @@ class TestKomikanAgent:
                 if call_count < 3:
                     resp.json.return_value = {
                         "status": "active",
-                        "current_player": "north",
+                        "current_player": "pangui",
                         "move_count": call_count,
                         "board": {},
                     }
                 else:
                     resp.json.return_value = {
                         "status": "north_won",
-                        "current_player": "north",
+                        "current_player": "pangui",
                         "move_count": call_count,
                         "board": {},
                     }

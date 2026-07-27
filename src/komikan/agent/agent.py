@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 MAX_LLM_RETRIES = 3
 
+_SIDE_MAP = {"north": "pangui", "south": "pu trewa"}
+
 
 class KomikanAgent:
     """Agent that reads game state, queries an LLM with tool definitions, and executes moves via the REST API."""
@@ -28,7 +30,7 @@ class KomikanAgent:
         self._provider = provider
         self._base_url = base_url.rstrip("/")
         self._game_id = game_id
-        self.side = side
+        self.side = _SIDE_MAP.get(side, side)
         self._client: httpx.Client | None = None
 
     def _get_client(self) -> httpx.Client:

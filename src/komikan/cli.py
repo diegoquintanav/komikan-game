@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> None:
     print()
 
     SIDE_MAP = {"north": "pangui", "south": "pu trewa"}
-    api_side = SIDE_MAP[args.side]
+    api_side = SIDE_MAP[args.side]  # KomikanAgent normalizes internally
 
     # Resolve API keys
     import os
