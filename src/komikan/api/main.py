@@ -244,7 +244,14 @@ if os.path.exists(frontend_path):
         return FileResponse(os.path.join(frontend_path, "index.html"))
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the API server (entry point for the komikan-api script)."""
     import uvicorn
 
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    host = os.environ.get("KOMIKAN_HOST", "0.0.0.0")
+    port = int(os.environ.get("KOMIKAN_PORT", "8000"))
+    uvicorn.run(app, host=host, port=port)
+
+
+if __name__ == "__main__":
+    main()
