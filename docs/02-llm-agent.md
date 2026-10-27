@@ -21,13 +21,13 @@ This pulls in `openai` and `anthropic` packages. If you only need one provider, 
 ```bash
 export OPENAI_API_KEY="sk-..."
 # or
-export ANTHROPIC_KEY="sk-ant-..."
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 ### 3. Start the API server
 
 ```bash
-uv run komikan-api
+uv run python -m uvicorn komikan.api.main:app --port 8000
 # runs on http://localhost:8000
 ```
 
@@ -40,7 +40,7 @@ The agent also supports the OpenCode Go gateway, an OpenAI-compatible endpoint:
 ```bash
 export OPENCODE_GO_API_KEY=oc_sk_...
 uv run komikan-agent --provider opencode-go --model deepseek-v4.1-flash \
-  --base-url http://localhost:8010
+  --base-url http://localhost:8000
 ```
 
 The gateway requires an `x-opencode-session` header. The provider generates a stable session id automatically; override it with `--session-id`. Use `--llm-base-url` to point at a custom LLM endpoint. Note that `--base-url` is the Komikan game API, not the LLM endpoint.
@@ -57,12 +57,14 @@ Defaults to **OpenAI gpt-4o playing as North (Pangui)** against a random opponen
 
 | Flag | Default | Description |
 |---|---|---|
-| `--provider` | `openai` | LLM provider: `openai` or `anthropic` |
-| `--model` | `gpt-4o` (openai) / `claude-sonnet-4-20250514` (anthropic) | Model to use |
+| `--provider` | `openai` | LLM provider: `openai`, `anthropic`, or `opencode-go` |
+| `--model` | `gpt-4o` (openai) / `claude-sonnet-4-20250514` (anthropic) / `deepseek-v4.1-flash` (opencode-go) | Model to use |
 | `--side` | `north` | Which side to play: `north` (Pangui) or `south` (Pu Trewa) |
 | `--opponent` | `random` | Opponent type: `random` (AI) or `human` |
-| `--delay` | `1.0` | Seconds between moves (easier to follow) |
-| `--base-url` | `http://localhost:8000` | API server URL |
+| `--delay` | `0.5` | Seconds between moves (easier to follow) |
+| `--base-url` | `http://localhost:8000` | Komikan game API server URL |
+| `--llm-base-url` | none | OpenAI-compatible LLM endpoint override |
+| `--session-id` | generated | `x-opencode-session` header value for OpenCode Go |
 
 ### Examples
 
