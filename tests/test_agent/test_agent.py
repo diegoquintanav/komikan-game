@@ -131,6 +131,60 @@ class TestKomikanAgent:
         call_kwargs = mock_provider.chat.call_args
         assert "system_prompt" in call_kwargs.kwargs or len(call_kwargs.args) >= 1
 
+    def test_play_turn_passes_system_prompt_to_provider(self):
+        mock_provider = MagicMock(spec=LLMProvider)
+        mock_provider.chat.return_value = LLMResponse(
+            tool_calls=[
+                ToolCall(
+                    name="make_move",
+                    arguments={"from_x": 2, "from_y": 0, "to_x": 2, "to_y": 1},
+                )
+            ],
+            text=None,
+        )
+        agent = KomikanAgent(
+            provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
+        )
+
+        mock_api = MagicMock()
+        game_state_resp = MagicMock()
+        game_state_resp.json.return_value = {
+            "status": "active",
+            "current_player": "pangui",
+            "move_count": 5,
+            "board": {},
+        }
+        game_state_resp.status_code = 200
+
+        valid_moves_resp = MagicMock()
+        valid_moves_resp.json.return_value = {
+            "tokens": [
+                {
+                    "position": [2, 0],
+                    "moves": [{"type": "advance", "to": [2, 1], "description": "move"}],
+                }
+            ]
+        }
+        valid_moves_resp.status_code = 200
+
+        move_resp = MagicMock()
+        move_resp.json.return_value = {
+            "status": "ok",
+            "game": {"status": "active", "current_player": "south"},
+        }
+        move_resp.status_code = 200
+
+        mock_api.get.side_effect = [game_state_resp, valid_moves_resp]
+        mock_api.post.return_value = move_resp
+        agent._client = mock_api
+
+        agent.play_turn()
+
+        mock_provider.chat.assert_called_once()
+        system_prompt = mock_provider.chat.call_args.kwargs["system_prompt"]
+        assert system_prompt == agent._system_prompt
+        assert "Komikan" in system_prompt
+
     def test_play_turn_executes_valid_move(self):
         mock_provider = MagicMock(spec=LLMProvider)
         mock_provider.chat.return_value = LLMResponse(

@@ -97,7 +97,7 @@ A capture move covers a distance of exactly **2 steps** in one direction.
 
 ## Win Conditions
 
-- **North (Pangui) wins**: By capturing enough South tokens that the South can no longer effectively surround the Pangui. Traditionally, this means capturing a significant number of the 12 dogs.
+- **North (Pangui) wins**: By capturing enough South tokens that the South can no longer effectively surround the Pangui. North wins when South has 4 or fewer tokens remaining.
 - **South (Pu Trewa) wins**: By surrounding and trapping the Pangui so that it has **no valid moves and no valid captures** available.
 
 ### Draw/Stalemate

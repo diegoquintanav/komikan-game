@@ -117,6 +117,53 @@ def format_move_list(tokens: list[dict[str, object]]) -> str:
     return "\n".join(lines)
 
 
+def build_system_prompt(side: str) -> str:
+    """Build a compact system prompt describing Komikan and the agent's role."""
+    normalized = side.strip().lower()
+
+    if normalized in ("south", "pu trewa"):
+        role = "You are the Pu Trewa (South), the 12 dogs."
+        objective = (
+            "Your objective is to trap the Pangui so it has no legal move and no "
+            "legal capture. You cannot capture; your tokens only advance."
+        )
+    else:
+        role = "You are the Pangui (North), the lone puma."
+        objective = (
+            "Your objective is to capture South tokens by jumping over them. "
+            "You win when South has 4 or fewer tokens remaining."
+        )
+
+    return "\n".join(
+        [
+            "Komikan is an asymmetric Mapuche hunt game on a 5x8 grid of nodes.",
+            "One Pangui (North) plays against 12 Pu Trewa (South).",
+            role,
+            objective,
+            (
+                "Coordinates: x ranges 0..4 and y ranges 0..7. Disabled nodes are "
+                "(0,2) and (4,2)."
+            ),
+            (
+                "Movement: on your turn, move one token to an adjacent empty node, "
+                "orthogonal or diagonal."
+            ),
+            (
+                "Capture: only North captures, by jumping exactly two steps over an "
+                "adjacent South token to an empty valid landing node."
+            ),
+            "Win conditions: North wins when South has 4 or fewer tokens; South "
+            "wins when North has no valid moves; the game is a stalemate when South "
+            "has no valid moves on its turn.",
+            (
+                "Output: choose exactly one move from the provided legal move list. "
+                "Call make_move once with from_x, from_y, to_x, to_y. Do not reply "
+                "with text."
+            ),
+        ]
+    )
+
+
 # ---------------------------------------------------------------------------
 # Backward-compat aliases (used by old cli.py; removed in Phase 4)
 # ---------------------------------------------------------------------------

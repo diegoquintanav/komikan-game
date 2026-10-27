@@ -1,6 +1,10 @@
 """Tests for game state prompt formatting for LLM consumption."""
 
-from komikan.agent.prompts import format_game_state_prompt, format_move_list
+from komikan.agent.prompts import (
+    build_system_prompt,
+    format_game_state_prompt,
+    format_move_list,
+)
 
 
 def _api_game_state(
@@ -134,6 +138,43 @@ class TestFormatGameStatePrompt:
         }
         prompt = format_game_state_prompt(game_state)
         assert "North tokens: 2" in prompt
+
+
+class TestBuildSystemPrompt:
+    def test_pangui_prompt_mentions_komikan_and_capture(self):
+        prompt = build_system_prompt("pangui")
+        assert "Komikan" in prompt
+        assert "Pangui" in prompt
+        assert "capture" in prompt.lower()
+        assert "4 or fewer" in prompt
+
+    def test_pu_trewa_prompt_mentions_side_and_no_capture(self):
+        prompt = build_system_prompt("pu trewa")
+        assert "Pu Trewa" in prompt
+        assert "cannot capture" in prompt
+        assert "only advance" in prompt
+        assert "trap" in prompt
+
+    def test_both_prompts_mention_coordinates_and_make_move(self):
+        for prompt in (build_system_prompt("north"), build_system_prompt("south")):
+            assert "0..4" in prompt
+            assert "0..7" in prompt
+            assert "make_move" in prompt
+
+    def test_north_normalizes_to_pangui_prompt(self):
+        assert build_system_prompt("north") == build_system_prompt("pangui")
+
+    def test_south_normalizes_to_pu_trewa_prompt(self):
+        assert build_system_prompt("south") == build_system_prompt("pu trewa")
+
+    def test_case_insensitive_normalization(self):
+        assert build_system_prompt("NORTH") == build_system_prompt("pangui")
+        assert build_system_prompt("Pu Trewa") == build_system_prompt("south")
+
+    def test_unrecognized_side_returns_non_empty_prompt(self):
+        prompt = build_system_prompt("aliens")
+        assert isinstance(prompt, str)
+        assert len(prompt) > 0
 
 
 class TestFormatMoveList:

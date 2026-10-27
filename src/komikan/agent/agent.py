@@ -8,7 +8,11 @@ import time
 
 import httpx
 
-from komikan.agent.prompts import format_game_state_prompt, format_move_list
+from komikan.agent.prompts import (
+    build_system_prompt,
+    format_game_state_prompt,
+    format_move_list,
+)
 from komikan.agent.provider import KOMIKAN_TOOLS, LLMProvider, ToolCall
 
 logger = logging.getLogger(__name__)
@@ -32,6 +36,7 @@ class KomikanAgent:
         self._base_url = base_url.rstrip("/")
         self._game_id = game_id
         self.side = _SIDE_MAP.get(side, side)
+        self._system_prompt = build_system_prompt(self.side)
         self._client: httpx.Client | None = None
 
     def _get_client(self) -> httpx.Client:
@@ -102,7 +107,7 @@ class KomikanAgent:
 
         for attempt in range(MAX_LLM_RETRIES):
             response = self._provider.chat(
-                system_prompt="You are a Komikan game agent. You play by selecting moves using the make_move tool. Always use the tool — do not respond with text.",
+                system_prompt=self._system_prompt,
                 user_prompt=user_prompt,
                 tools=KOMIKAN_TOOLS,
             )
