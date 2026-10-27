@@ -12,12 +12,12 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           version: "latest"
           python-version: "3.11"
-          cache: true
+          enable-cache: true
       - run: uv sync
       - run: uv run pytest tests/ -v
       - run: uv run ruff check .
@@ -33,15 +33,15 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0  # full history for changelog generation
 
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v10
         with:
           version: "latest"
           python-version: "3.11"
-          cache: true
+          enable-cache: true
 
       - name: Extract changelog for this version
         id: changelog
@@ -58,7 +58,7 @@ jobs:
           echo "$CHANGELOG" > /tmp/release_body.md
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           body_path: /tmp/release_body.md
           generate_release_notes: false
