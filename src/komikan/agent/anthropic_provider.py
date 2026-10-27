@@ -59,13 +59,11 @@ class AnthropicProvider:
         if anthropic_tools is not None:
             kwargs["tools"] = anthropic_tools
 
-        last_error: Exception | None = None
         for attempt in range(MAX_RETRIES):
             try:
                 response = client.messages.create(**kwargs)
                 break
             except Exception as e:
-                last_error = e
                 if _is_rate_limit(e) and attempt < MAX_RETRIES - 1:
                     delay = RETRY_BASE_DELAY * (2**attempt)
                     logger.warning(
@@ -77,8 +75,6 @@ class AnthropicProvider:
                     time.sleep(delay)
                     continue
                 raise
-        else:
-            raise last_error  # type: ignore[misc]
 
         tool_calls: list[ToolCall] = []
         text_parts: list[str] = []

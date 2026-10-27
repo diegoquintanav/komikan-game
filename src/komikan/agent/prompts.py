@@ -6,31 +6,86 @@ import re
 from typing import Any
 
 
+BOARD_WIDTH = 5
+BOARD_HEIGHT = 8
+
+
+def _player_positions(player: object) -> list[tuple[int, int]]:
+    """Extract in-bounds (x, y) positions from an API player dict."""
+    if not isinstance(player, dict):
+        return []
+
+    positions = player.get("positions")
+    if not isinstance(positions, list):
+        return []
+
+    result: list[tuple[int, int]] = []
+    for position in positions:
+        if not isinstance(position, (list, tuple)) or len(position) != 2:
+            continue
+        x, y = position
+        if isinstance(x, int) and isinstance(y, int):
+            if 0 <= x < BOARD_WIDTH and 0 <= y < BOARD_HEIGHT:
+                result.append((x, y))
+    return result
+
+
+def _player_token_count(player: object, positions: list[tuple[int, int]]) -> int:
+    """Read the token count from an API player dict, falling back to positions."""
+    if isinstance(player, dict):
+        count = player.get("token_count")
+        if isinstance(count, int):
+            return count
+    return len(positions)
+
+
 def format_game_state_prompt(game_state: dict[str, object]) -> str:
-    """Format game state as a structured prompt for the LLM."""
-    board = game_state.get("board", {})
+    """Format the API game state as a structured prompt for the LLM."""
     current_player = game_state.get("current_player", "unknown")
     move_count = game_state.get("move_count", 0)
     status = game_state.get("status", "unknown")
-    north_captures = game_state.get("north_captures", 0)
-    south_tokens = game_state.get("south_tokens_remaining", 12)
+
+    north_player = game_state.get("north_player") or {}
+    south_player = game_state.get("south_player") or {}
+
+    north_positions = _player_positions(north_player)
+    south_positions = _player_positions(south_player)
+    north_count = _player_token_count(north_player, north_positions)
+    south_count = _player_token_count(south_player, south_positions)
 
     lines = [
         f"Current player: {current_player}",
         f"Move count: {move_count}",
         f"Game status: {status}",
-        f"North captures: {north_captures}",
-        f"South tokens remaining: {south_tokens}",
+        f"North tokens: {north_count}",
+        f"South tokens: {south_count}",
         "",
-        "Board positions (x,y -> side):",
+        "Board:",
     ]
 
-    if board:
-        for pos, side in sorted(
-            board.items(),
-            key=lambda item: (int(item[0].split(",")[1]), int(item[0].split(",")[0])),
-        ):
-            lines.append(f"  {pos} -> {side}")
+    north_set = set(north_positions)
+    south_set = set(south_positions)
+
+    for y in range(BOARD_HEIGHT):
+        row: list[str] = []
+        for x in range(BOARD_WIDTH):
+            if (x, y) in north_set:
+                row.append("N")
+            elif (x, y) in south_set:
+                row.append("S")
+            else:
+                row.append(".")
+        lines.append(" ".join(row))
+
+    lines.append("")
+    lines.append("Board positions (x,y -> side):")
+
+    occupied = [(x, y, "pangui") for x, y in north_positions]
+    occupied += [(x, y, "pu trewa") for x, y in south_positions]
+
+    if occupied:
+        for x, y, side in sorted(occupied, key=lambda item: (item[1], item[0])):
+            lines.append(f"  ({x},{y}) -> {side}")
     else:
         lines.append("  (empty board)")
 

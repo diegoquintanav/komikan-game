@@ -65,13 +65,11 @@ class OpenAIProvider:
         if openai_tools is not None:
             kwargs["tools"] = openai_tools
 
-        last_error: Exception | None = None
         for attempt in range(MAX_RETRIES):
             try:
                 response = client.chat.completions.create(**kwargs)
                 break
             except Exception as e:
-                last_error = e
                 if _is_rate_limit(e) and attempt < MAX_RETRIES - 1:
                     delay = RETRY_BASE_DELAY * (2**attempt)
                     logger.warning(
@@ -83,8 +81,6 @@ class OpenAIProvider:
                     time.sleep(delay)
                     continue
                 raise
-        else:
-            raise last_error  # type: ignore[misc]
 
         message = response.choices[0].message
 

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import random
+import time
 
 import httpx
 
@@ -124,7 +125,11 @@ class KomikanAgent:
                     MAX_LLM_RETRIES,
                     tool_call.arguments,
                 )
-                user_prompt += f"\n\nThe move {tool_call.arguments} is not valid. Here are the valid moves:\n{move_list}\n\nTry again."
+                user_prompt += (
+                    f"\n\nThe move {tool_call.arguments} is not in the current legal "
+                    "move list. Choose exactly one move from the list below:\n"
+                    f"{move_list}"
+                )
 
         logger.warning(
             "LLM failed %d times, falling back to random legal move", MAX_LLM_RETRIES
@@ -151,7 +156,7 @@ class KomikanAgent:
         result = self._execute_move(move)
         return result.get("game", result)
 
-    def play_until_done(self, max_turns: int = 200) -> str:
+    def play_until_done(self, max_turns: int = 200, poll_interval: float = 0.5) -> str:
         """Run the agent's game loop until a terminal state or max turns."""
         for _ in range(max_turns):
             game_state = self._fetch_game_state()
@@ -163,8 +168,8 @@ class KomikanAgent:
             current_player = game_state.get("current_player", "")
             if current_player == self.side:
                 self.play_turn()
-            else:
-                continue
+            elif poll_interval > 0:
+                time.sleep(poll_interval)
 
         game_state = self._fetch_game_state()
         return str(game_state.get("status", "unknown"))

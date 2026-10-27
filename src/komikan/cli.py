@@ -166,7 +166,7 @@ def main(argv: list[str] | None = None) -> None:
     print()
 
     SIDE_MAP = {"north": "pangui", "south": "pu trewa"}
-    api_side = SIDE_MAP[args.side]  # KomikanAgent normalizes internally
+    api_side = SIDE_MAP[args.side]
 
     # Resolve API keys
     import os
@@ -208,7 +208,7 @@ def main(argv: list[str] | None = None) -> None:
         provider=provider,
         base_url=args.base_url,
         game_id=game_id,
-        side=api_side,
+        side=args.side,
     )
 
     # Game loop

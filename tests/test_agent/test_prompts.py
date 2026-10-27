@@ -3,79 +3,107 @@
 from komikan.agent.prompts import format_game_state_prompt, format_move_list
 
 
+def _api_game_state(
+    north_positions=None,
+    south_positions=None,
+    current_player="pangui",
+    move_count=0,
+    status="active",
+):
+    """Build a dict matching the API GameState response shape."""
+    north_positions = north_positions or []
+    south_positions = south_positions or []
+    return {
+        "game_id": "test-game",
+        "status": status,
+        "current_player": current_player,
+        "move_count": move_count,
+        "north_player": {
+            "positions": north_positions,
+            "token_count": len(north_positions),
+            "side": "pangui",
+        },
+        "south_player": {
+            "positions": south_positions,
+            "token_count": len(south_positions),
+            "side": "pu trewa",
+        },
+    }
+
+
 class TestFormatGameStatePrompt:
     def test_includes_current_player(self):
-        game_state = {
-            "current_player": "north",
-            "move_count": 5,
-            "status": "in_progress",
-            "board": {},
-            "north_captures": 0,
-            "south_tokens_remaining": 12,
-        }
+        game_state = _api_game_state(current_player="pangui", move_count=5)
         prompt = format_game_state_prompt(game_state)
-        assert "north" in prompt.lower()
+        assert "pangui" in prompt.lower()
 
     def test_includes_move_count(self):
-        game_state = {
-            "current_player": "south",
-            "move_count": 42,
-            "status": "in_progress",
-            "board": {},
-            "north_captures": 0,
-            "south_tokens_remaining": 12,
-        }
+        game_state = _api_game_state(current_player="pu trewa", move_count=42)
         prompt = format_game_state_prompt(game_state)
         assert "42" in prompt
 
     def test_includes_board_positions(self):
-        game_state = {
-            "current_player": "north",
-            "move_count": 1,
-            "status": "in_progress",
-            "board": {"2,0": "north", "0,5": "south", "1,5": "south"},
-            "north_captures": 0,
-            "south_tokens_remaining": 12,
-        }
+        game_state = _api_game_state(
+            north_positions=[[2, 0]],
+            south_positions=[[0, 5], [1, 5]],
+        )
         prompt = format_game_state_prompt(game_state)
-        assert "2,0" in prompt or "(2,0)" in prompt
+        assert "(2,0) -> pangui" in prompt
+        assert "(0,5) -> pu trewa" in prompt
+        assert "(1,5) -> pu trewa" in prompt
+
+    def test_sorts_positions_by_y_then_x(self):
+        game_state = _api_game_state(
+            north_positions=[[3, 1], [1, 1]],
+            south_positions=[[0, 0]],
+        )
+        prompt = format_game_state_prompt(game_state)
+        assert prompt.index("(0,0) -> pu trewa") < prompt.index("(1,1) -> pangui")
+        assert prompt.index("(1,1) -> pangui") < prompt.index("(3,1) -> pangui")
+
+    def test_includes_token_counts(self):
+        game_state = _api_game_state(
+            north_positions=[[2, 0]],
+            south_positions=[[0, 5], [1, 5]],
+        )
+        prompt = format_game_state_prompt(game_state)
+        assert "North tokens: 1" in prompt
+        assert "South tokens: 2" in prompt
 
     def test_includes_status(self):
-        game_state = {
-            "current_player": "north",
-            "move_count": 0,
-            "status": "in_progress",
-            "board": {},
-            "north_captures": 0,
-            "south_tokens_remaining": 12,
-        }
+        game_state = _api_game_state(status="active")
         prompt = format_game_state_prompt(game_state)
-        assert "in_progress" in prompt.lower() or "progress" in prompt.lower()
+        assert "active" in prompt.lower()
 
     def test_empty_board(self):
-        game_state = {
-            "current_player": "north",
-            "move_count": 0,
-            "status": "in_progress",
-            "board": {},
-            "north_captures": 0,
-            "south_tokens_remaining": 12,
-        }
+        game_state = _api_game_state()
         prompt = format_game_state_prompt(game_state)
         assert isinstance(prompt, str)
         assert len(prompt) > 0
+        assert "(empty board)" in prompt
 
-    def test_includes_capture_info(self):
+    def test_missing_player_dicts_degrade_gracefully(self):
         game_state = {
-            "current_player": "north",
-            "move_count": 10,
-            "status": "in_progress",
-            "board": {},
-            "north_captures": 3,
-            "south_tokens_remaining": 9,
+            "current_player": "pangui",
+            "move_count": 0,
+            "status": "active",
         }
         prompt = format_game_state_prompt(game_state)
-        assert "3" in prompt
+        assert "North tokens: 0" in prompt
+        assert "South tokens: 0" in prompt
+        assert "(empty board)" in prompt
+
+    def test_renders_tokens_in_grid(self):
+        """Regression: the LLM must see N and S tokens on the grid."""
+        game_state = _api_game_state(
+            north_positions=[[2, 0]],
+            south_positions=[[1, 5], [2, 5]],
+        )
+        prompt = format_game_state_prompt(game_state)
+        lines = prompt.splitlines()
+        assert ". . N . ." in lines
+        assert ". S S . ." in lines
+        assert "(empty board)" not in prompt
 
 
 class TestFormatMoveList:
