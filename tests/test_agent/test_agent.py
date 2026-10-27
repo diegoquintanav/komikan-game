@@ -1,6 +1,6 @@
 """Tests for the LLM-powered Komikan agent."""
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from komikan.agent.agent import KomikanAgent
 from komikan.agent.provider import LLMProvider, LLMResponse, ToolCall
 
@@ -446,3 +446,45 @@ class TestKomikanAgent:
 
         result = agent.play_until_done(max_turns=10)
         assert result is not None
+
+    def test_play_until_done_sleeps_on_opponent_turn(self):
+        """Regression: the loop sleeps instead of busy-polling on the opponent turn."""
+        mock_provider = MagicMock(spec=LLMProvider)
+        agent = KomikanAgent(
+            provider=mock_provider, base_url="http://localhost:8000", game_id="test-123"
+        )
+
+        def make_resp(game_state):
+            resp = MagicMock()
+            resp.status_code = 200
+            resp.json.return_value = game_state
+            return resp
+
+        active_resp = make_resp(
+            {
+                "status": "active",
+                "current_player": "south",
+                "move_count": 1,
+                "board": {},
+            }
+        )
+        terminal_resp = make_resp(
+            {
+                "status": "south_won",
+                "current_player": "south",
+                "move_count": 2,
+                "board": {},
+            }
+        )
+
+        mock_api = MagicMock()
+        mock_api.get.side_effect = [active_resp, active_resp, terminal_resp]
+        agent._client = mock_api
+
+        with patch("komikan.agent.agent.time.sleep") as mock_sleep:
+            result = agent.play_until_done(max_turns=3)
+
+        assert result == "south_won"
+        mock_sleep.assert_called()
+        for call in mock_sleep.call_args_list:
+            assert call.args[0] > 0

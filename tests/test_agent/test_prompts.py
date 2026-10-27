@@ -105,6 +105,36 @@ class TestFormatGameStatePrompt:
         assert ". S S . ." in lines
         assert "(empty board)" not in prompt
 
+    def test_out_of_bounds_positions_are_filtered(self):
+        """Regression: positions outside the 5x8 board are dropped."""
+        game_state = _api_game_state(
+            north_positions=[[2, 0], [5, 0], [-1, 2], [0, 8]],
+        )
+        prompt = format_game_state_prompt(game_state)
+        assert "(2,0) -> pangui" in prompt
+        assert "(5,0)" not in prompt
+        assert "(-1,2)" not in prompt
+        assert "(0,8)" not in prompt
+
+    def test_missing_token_count_falls_back_to_positions(self):
+        """Regression: a player without token_count falls back to len(positions)."""
+        game_state = {
+            "current_player": "pangui",
+            "move_count": 0,
+            "status": "active",
+            "north_player": {
+                "positions": [[2, 0], [1, 1]],
+                "side": "pangui",
+            },
+            "south_player": {
+                "positions": [],
+                "token_count": 0,
+                "side": "pu trewa",
+            },
+        }
+        prompt = format_game_state_prompt(game_state)
+        assert "North tokens: 2" in prompt
+
 
 class TestFormatMoveList:
     def test_formats_single_move(self):
