@@ -156,6 +156,50 @@ uv run python -m uvicorn komikan.api.main:app --host 0.0.0.0 --port 8000
 
 Then visit <http://localhost:8000> - both the API and the web interface are served from the same port.
 
+### Option 5: LLM Agent
+
+An LLM can play either side through the REST API, against a random bot or against you.
+
+1. **Install the optional LLM SDKs:**
+
+   ```bash
+   uv sync --extra llm
+   ```
+
+2. **Start the API** (the agent talks to it over HTTP):
+
+   ```bash
+   uv run python -m uvicorn komikan.api.main:app --port 8000
+   ```
+
+3. **In a new terminal, export a key and run the agent:**
+
+   ```bash
+   export OPENCODE_GO_API_KEY="oc_sk_..."
+   uv run komikan-agent --provider opencode-go --model deepseek-v4.1-flash
+   ```
+
+   Or use OpenAI or Anthropic directly:
+
+   ```bash
+   export OPENAI_API_KEY="sk-..."
+   uv run komikan-agent --provider openai --model gpt-4o
+   ```
+
+4. **Choose the sides:**
+
+   ```bash
+   # The LLM plays South (Pu Trewa) instead of North (Pangui)
+   uv run komikan-agent --side south
+
+   # You play the other side, entering moves in the terminal
+   uv run komikan-agent --opponent human
+   ```
+
+The agent defaults to North (Pangui) against a random opponent. If the API runs on another port, pass `--base-url http://localhost:<port>`.
+
+See **[docs/02-llm-agent.md](docs/02-llm-agent.md)** for the full setup, provider flags, the OpenCode Go gateway, and the architecture.
+
 ## API Usage
 
 You can also interact with the game programmatically using the REST API.

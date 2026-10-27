@@ -13,6 +13,7 @@ from komikan.api.models import (
     MoveRequest,
     MoveResponse,
     ValidMovesResponse,
+    AllValidMovesResponse,
     TokenPosition,
     CustomGameRequest,
     MoveRecord,
@@ -188,6 +189,26 @@ async def get_valid_moves(game_id: str, from_x: int, from_y: int):
         valid_moves=valid_moves,
         valid_captures=valid_captures,
     )
+
+
+@app.get("/api/games/{game_id}/all-valid-moves", response_model=AllValidMovesResponse)
+async def get_all_valid_moves(game_id: str):
+    """Get all valid moves for every token of the current player."""
+    game = game_manager.get_game(game_id)
+    if not game:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Game {game_id} not found",
+        )
+
+    if game.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Game is already over with status: {game.status}",
+        )
+
+    result = game.get_all_valid_moves()
+    return AllValidMovesResponse(**result)
 
 
 @app.delete("/api/games/{game_id}", status_code=status.HTTP_204_NO_CONTENT)

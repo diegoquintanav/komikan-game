@@ -1,0 +1,116 @@
+"""OpenAI provider adapter for tool-calling LLM interactions."""
+
+from __future__ import annotations
+
+import json
+import logging
+import time
+
+from komikan.agent.provider import LLMResponse, ToolCall, ToolDefinition
+
+logger = logging.getLogger(__name__)
+
+MAX_RETRIES = 3
+RETRY_BASE_DELAY = 1.0
+
+
+class OpenAIProvider:
+    """OpenAI adapter implementing the LLMProvider protocol."""
+
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "gpt-4o",
+        base_url: str | None = None,
+        session_id: str | None = None,
+    ) -> None:
+        self._api_key = api_key
+        self._model = model
+        self._base_url = base_url
+        self._session_id = session_id
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from openai import OpenAI
+
+            client_kwargs: dict[str, object] = {"api_key": self._api_key}
+            if self._base_url is not None:
+                client_kwargs["base_url"] = self._base_url
+            if self._session_id is not None:
+                client_kwargs["default_headers"] = {
+                    "x-opencode-session": self._session_id
+                }
+            self._client = OpenAI(**client_kwargs)
+        return self._client
+
+    @staticmethod
+    def _convert_tools(tools: list[ToolDefinition]) -> list[dict[str, object]] | None:
+        if not tools:
+            return None
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t.name,
+                    "description": t.description,
+                    "parameters": t.parameters,
+                },
+            }
+            for t in tools
+        ]
+
+    def chat(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        tools: list[ToolDefinition],
+    ) -> LLMResponse:
+        client = self._get_client()
+        openai_tools = self._convert_tools(tools)
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ]
+
+        kwargs: dict[str, object] = {
+            "model": self._model,
+            "messages": messages,
+        }
+        if openai_tools is not None:
+            kwargs["tools"] = openai_tools
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = client.chat.completions.create(**kwargs)
+                break
+            except Exception as e:
+                if _is_rate_limit(e) and attempt < MAX_RETRIES - 1:
+                    delay = RETRY_BASE_DELAY * (2**attempt)
+                    logger.warning(
+                        "Rate limited, retrying in %.1fs (attempt %d/%d)",
+                        delay,
+                        attempt + 1,
+                        MAX_RETRIES,
+                    )
+                    time.sleep(delay)
+                    continue
+                raise
+
+        message = response.choices[0].message
+
+        if message.tool_calls:
+            tool_calls = [
+                ToolCall(
+                    name=tc.function.name,
+                    arguments=json.loads(tc.function.arguments),
+                )
+                for tc in message.tool_calls
+            ]
+            return LLMResponse(tool_calls=tool_calls, text=None)
+
+        return LLMResponse(tool_calls=[], text=message.content)
+
+
+def _is_rate_limit(exc: Exception) -> bool:
+    return exc.__class__.__name__ == "RateLimitError" or "429" in str(exc)

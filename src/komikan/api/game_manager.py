@@ -235,6 +235,44 @@ class GameInstance:
 
         return valid_moves, valid_captures
 
+    def get_all_valid_moves(self) -> dict:
+        """
+        Get all valid moves for every token of the current player.
+        Returns a dict with current_player and tokens list.
+        """
+        current_side = self.core_state.current_player
+        tokens = []
+
+        for pos in current_side.positions:
+            from_x, from_y = pos
+            valid_moves, valid_captures = self.get_valid_moves(from_x, from_y)
+
+            moves = []
+            for move in valid_moves:
+                moves.append(
+                    {
+                        "type": "advance",
+                        "to": [move.x, move.y],
+                        "description": f"Move from ({from_x},{from_y}) to ({move.x},{move.y})",
+                    }
+                )
+            for to_pos, cap_pos in valid_captures:
+                moves.append(
+                    {
+                        "type": "capture",
+                        "to": [to_pos.x, to_pos.y],
+                        "description": f"Capture from ({from_x},{from_y}) over ({cap_pos.x},{cap_pos.y}) to ({to_pos.x},{to_pos.y})",
+                        "captures_from": [[cap_pos.x, cap_pos.y]],
+                    }
+                )
+
+            tokens.append({"position": [from_x, from_y], "moves": moves})
+
+        return {
+            "current_player": self.get_current_player_side().value,
+            "tokens": tokens,
+        }
+
     def to_api_model(self) -> GameStateModel:
         """Convert game instance to API model."""
         return GameStateModel(

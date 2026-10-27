@@ -1,0 +1,100 @@
+"""Anthropic provider adapter for tool-calling LLM interactions."""
+
+from __future__ import annotations
+
+import logging
+import time
+
+from komikan.agent.provider import LLMResponse, ToolCall, ToolDefinition
+
+logger = logging.getLogger(__name__)
+
+MAX_RETRIES = 3
+RETRY_BASE_DELAY = 1.0
+
+
+class AnthropicProvider:
+    """Anthropic adapter implementing the LLMProvider protocol."""
+
+    def __init__(self, api_key: str, model: str = "claude-sonnet-4-20250514") -> None:
+        self._api_key = api_key
+        self._model = model
+        self._client = None
+
+    def _get_client(self):
+        if self._client is None:
+            from anthropic import Anthropic
+
+            self._client = Anthropic(api_key=self._api_key)
+        return self._client
+
+    @staticmethod
+    def _convert_tools(tools: list[ToolDefinition]) -> list[dict[str, object]] | None:
+        if not tools:
+            return None
+        return [
+            {
+                "name": t.name,
+                "description": t.description,
+                "input_schema": t.parameters,
+            }
+            for t in tools
+        ]
+
+    def chat(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        tools: list[ToolDefinition],
+    ) -> LLMResponse:
+        client = self._get_client()
+        anthropic_tools = self._convert_tools(tools)
+
+        kwargs: dict[str, object] = {
+            "model": self._model,
+            "max_tokens": 1024,
+            "system": system_prompt,
+            "messages": [{"role": "user", "content": user_prompt}],
+        }
+        if anthropic_tools is not None:
+            kwargs["tools"] = anthropic_tools
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = client.messages.create(**kwargs)
+                break
+            except Exception as e:
+                if _is_rate_limit(e) and attempt < MAX_RETRIES - 1:
+                    delay = RETRY_BASE_DELAY * (2**attempt)
+                    logger.warning(
+                        "Rate limited, retrying in %.1fs (attempt %d/%d)",
+                        delay,
+                        attempt + 1,
+                        MAX_RETRIES,
+                    )
+                    time.sleep(delay)
+                    continue
+                raise
+
+        tool_calls: list[ToolCall] = []
+        text_parts: list[str] = []
+
+        for block in response.content:
+            if block.type == "tool_use":
+                tool_calls.append(
+                    ToolCall(
+                        name=block.name,
+                        arguments=block.input,
+                    )
+                )
+            elif block.type == "text" and block.text:
+                text_parts.append(block.text)
+
+        return LLMResponse(
+            tool_calls=tool_calls,
+            text="".join(text_parts) if text_parts else None,
+        )
+
+
+def _is_rate_limit(exc: Exception) -> bool:
+    return exc.__class__.__name__ == "RateLimitError" or "429" in str(exc)

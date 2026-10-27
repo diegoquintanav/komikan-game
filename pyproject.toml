@@ -11,6 +11,12 @@ readme = "README.md"
 requires-python = ">=3.11"
 version = "0.1.3"
 
+[project.optional-dependencies]
+llm = [
+  "openai>=2.0.0",
+  "anthropic>=0.40.0",
+]
+
 [dependency-groups]
 dev = [
   "commitizen>=4.10.0",
@@ -18,11 +24,14 @@ dev = [
   "ruff>=0.14.8",
   "httpx>=0.27.0",
   "pytest-asyncio>=0.24.0",
+  "openai>=2.48.0",
+  "anthropic>=0.120.0",
 ]
 
 [project.scripts]
 komikan = "komikan.run:main"
 komikan-api = "komikan.api.main:main"
+komikan-agent = "komikan.cli:main"
 
 [build-system]
 build-backend = "uv_build"

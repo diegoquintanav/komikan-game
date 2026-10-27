@@ -105,6 +105,31 @@ class ValidMovesResponse(BaseModel):
     valid_captures: List[Tuple[TokenPosition, TokenPosition]]  # (to, captured)
 
 
+class MoveData(BaseModel):
+    """A single move option for a token."""
+
+    type: str = Field(..., description="Move type: 'advance' or 'capture'")
+    to: List[int] = Field(..., description="Target position [column, row]")
+    description: str = Field(..., description="Human-readable move description")
+    captures_from: Optional[List[List[int]]] = Field(
+        None, description="Path of captured positions (capture only)"
+    )
+
+
+class TokenMoves(BaseModel):
+    """All available moves for a single token."""
+
+    position: List[int] = Field(..., description="Token position [column, row]")
+    moves: List[MoveData] = Field(..., description="Available moves")
+
+
+class AllValidMovesResponse(BaseModel):
+    """Response with all valid moves for every token of the current player."""
+
+    current_player: str = Field(..., description="Current player side")
+    tokens: List[TokenMoves] = Field(..., description="Moves per token")
+
+
 class ErrorResponse(BaseModel):
     """Error response."""
 
