@@ -1,8 +1,9 @@
 """CLI entry point for Komikan AI agent games.
 
 Usage:
-    komikan-agent [--provider openai|anthropic] [--model MODEL] [--side north|south]
-                  [--opponent human|random] [--delay SECONDS] [--base-url URL]
+    komikan-agent [--provider openai|anthropic|opencode-go] [--model MODEL]
+                  [--side north|south] [--opponent human|random] [--delay SECONDS]
+                  [--base-url URL] [--llm-base-url URL] [--session-id ID]
 """
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ import httpx
 DEFAULT_MODELS = {
     "openai": "gpt-4o",
     "anthropic": "claude-sonnet-4-20250514",
+    "opencode-go": "deepseek-v4.1-flash",
 }
 
 
@@ -28,7 +30,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--provider",
         default="openai",
-        choices=["openai", "anthropic"],
+        choices=["openai", "anthropic", "opencode-go"],
         help="LLM provider (default: openai)",
     )
     parser.add_argument(
@@ -57,7 +59,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--base-url",
         default="http://localhost:8000",
-        help="Backend server URL (default: http://localhost:8000)",
+        help="Komikan game API server URL (default: http://localhost:8000)",
+    )
+    parser.add_argument(
+        "--llm-base-url",
+        default=None,
+        help="OpenAI-compatible LLM endpoint override",
+    )
+    parser.add_argument(
+        "--session-id",
+        default=None,
+        help="value for the x-opencode-session header (OpenCode Go)",
     )
     return parser.parse_args(argv)
 
@@ -176,6 +188,13 @@ def main(argv: list[str] | None = None) -> None:
         if not api_key:
             print("Error: OPENAI_API_KEY environment variable is not set.")
             return
+    elif args.provider == "opencode-go":
+        api_key = os.environ.get("OPENCODE_GO_API_KEY", "") or os.environ.get(
+            "OPENAI_API_KEY", ""
+        )
+        if not api_key:
+            print("Error: OPENCODE_GO_API_KEY environment variable is not set.")
+            return
     else:
         api_key = os.environ.get("ANTHROPIC_API_KEY", "")
         if not api_key:
@@ -185,7 +204,13 @@ def main(argv: list[str] | None = None) -> None:
     # Create provider
     from komikan.agent.factory import create_provider
 
-    provider = create_provider(args.provider, api_key=api_key, model=model)
+    provider_kwargs: dict[str, object] = {"api_key": api_key, "model": model}
+    if args.provider in ("openai", "opencode-go"):
+        if args.llm_base_url is not None:
+            provider_kwargs["base_url"] = args.llm_base_url
+        if args.session_id is not None:
+            provider_kwargs["session_id"] = args.session_id
+    provider = create_provider(args.provider, **provider_kwargs)
 
     # Connect to API and create game
     client = httpx.Client(base_url=args.base_url.rstrip("/"), timeout=10.0)

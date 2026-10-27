@@ -17,16 +17,31 @@ RETRY_BASE_DELAY = 1.0
 class OpenAIProvider:
     """OpenAI adapter implementing the LLMProvider protocol."""
 
-    def __init__(self, api_key: str, model: str = "gpt-4o") -> None:
+    def __init__(
+        self,
+        api_key: str,
+        model: str = "gpt-4o",
+        base_url: str | None = None,
+        session_id: str | None = None,
+    ) -> None:
         self._api_key = api_key
         self._model = model
+        self._base_url = base_url
+        self._session_id = session_id
         self._client = None
 
     def _get_client(self):
         if self._client is None:
             from openai import OpenAI
 
-            self._client = OpenAI(api_key=self._api_key)
+            client_kwargs: dict[str, object] = {"api_key": self._api_key}
+            if self._base_url is not None:
+                client_kwargs["base_url"] = self._base_url
+            if self._session_id is not None:
+                client_kwargs["default_headers"] = {
+                    "x-opencode-session": self._session_id
+                }
+            self._client = OpenAI(**client_kwargs)
         return self._client
 
     @staticmethod

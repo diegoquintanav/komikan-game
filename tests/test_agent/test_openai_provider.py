@@ -1,7 +1,7 @@
 """Tests for OpenAI provider implementation."""
 
 import pytest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 from komikan.agent.provider import LLMProvider, ToolDefinition, LLMResponse
 
 
@@ -207,6 +207,33 @@ class TestOpenAIProvider:
         provider.chat(system_prompt="sys", user_prompt="usr", tools=[])
         call_kwargs = mock_client.chat.completions.create.call_args
         assert call_kwargs.kwargs.get("tools") is None
+
+    def test_default_construction_passes_only_api_key(self):
+        from komikan.agent.openai_provider import OpenAIProvider
+
+        with patch("openai.OpenAI") as MockOpenAI:
+            provider = OpenAIProvider(api_key="sk-test", model="gpt-4o")
+            provider._get_client()
+
+        MockOpenAI.assert_called_once_with(api_key="sk-test")
+
+    def test_construction_with_base_url_and_session_id(self):
+        from komikan.agent.openai_provider import OpenAIProvider
+
+        with patch("openai.OpenAI") as MockOpenAI:
+            provider = OpenAIProvider(
+                api_key="sk-test",
+                model="gpt-4o",
+                base_url="https://opencode.ai/zen/go/v1",
+                session_id="komikan-abc123",
+            )
+            provider._get_client()
+
+        MockOpenAI.assert_called_once_with(
+            api_key="sk-test",
+            base_url="https://opencode.ai/zen/go/v1",
+            default_headers={"x-opencode-session": "komikan-abc123"},
+        )
 
 
 class TestOpenAIProviderRateLimit:

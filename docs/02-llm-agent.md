@@ -33,6 +33,18 @@ uv run komikan-api
 
 The agent communicates over HTTP, so it works against any running server — local or remote.
 
+### 4. OpenCode Go (optional)
+
+The agent also supports the OpenCode Go gateway, an OpenAI-compatible endpoint:
+
+```bash
+export OPENCODE_GO_API_KEY=oc_sk_...
+uv run komikan-agent --provider opencode-go --model deepseek-v4.1-flash \
+  --base-url http://localhost:8010
+```
+
+The gateway requires an `x-opencode-session` header. The provider generates a stable session id automatically; override it with `--session-id`. Use `--llm-base-url` to point at a custom LLM endpoint. Note that `--base-url` is the Komikan game API, not the LLM endpoint.
+
 ## Running the agent
 
 ```bash

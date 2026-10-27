@@ -53,3 +53,22 @@ class TestProviderFactory:
 
         provider = create_provider("openai", api_key="sk-custom", model="gpt-4o-mini")
         assert isinstance(provider, OpenAIProvider)
+
+    def test_creates_opencode_go_provider(self):
+        from komikan.agent.factory import OPENCODE_GO_BASE_URL, create_provider
+        from komikan.agent.openai_provider import OpenAIProvider
+
+        provider = create_provider("opencode-go", api_key="k", model="m")
+        assert isinstance(provider, OpenAIProvider)
+        assert provider._base_url == OPENCODE_GO_BASE_URL
+        assert provider._session_id.startswith("komikan-")
+
+    def test_opencode_go_honors_explicit_session_id(self):
+        from komikan.agent.factory import create_provider
+        from komikan.agent.openai_provider import OpenAIProvider
+
+        provider = create_provider(
+            "opencode-go", api_key="k", model="m", session_id="custom-session"
+        )
+        assert isinstance(provider, OpenAIProvider)
+        assert provider._session_id == "custom-session"

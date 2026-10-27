@@ -36,6 +36,36 @@ class TestCLIParseArgs:
         args = parse_args(["--provider", "anthropic"])
         assert args.provider == "anthropic"
 
+    def test_provider_opencode_go(self):
+        from komikan.cli import parse_args
+
+        args = parse_args(["--provider", "opencode-go"])
+        assert args.provider == "opencode-go"
+
+    def test_llm_base_url_default(self):
+        from komikan.cli import parse_args
+
+        args = parse_args([])
+        assert args.llm_base_url is None
+
+    def test_llm_base_url_custom(self):
+        from komikan.cli import parse_args
+
+        args = parse_args(["--llm-base-url", "https://opencode.ai/zen/go/v1"])
+        assert args.llm_base_url == "https://opencode.ai/zen/go/v1"
+
+    def test_session_id_default(self):
+        from komikan.cli import parse_args
+
+        args = parse_args([])
+        assert args.session_id is None
+
+    def test_session_id_custom(self):
+        from komikan.cli import parse_args
+
+        args = parse_args(["--session-id", "komikan-abc123"])
+        assert args.session_id == "komikan-abc123"
+
     def test_model_override(self):
         from komikan.cli import parse_args
 
